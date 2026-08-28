@@ -1,0 +1,641 @@
+event_name,product_context,volume_30d
+$mp_page_leave,undefined,1
+$mp_web_page_view,undefined,1
+API Error Received,pay,12078
+API Error Received,undefined,4203
+Account Deleted,undefined,7712
+Account Type Selected,pay,494
+Active Credit When Deleting Account,presta,287
+Active Credit When Deleting Account,pay,89
+Add Credit Card Clicked,pay,2028
+Add Credit Card Failed,pay,814
+Add seller submitted,pay,749
+Address Receipt Submitted,undefined,5118
+Address Verification Failed,undefined,3221
+Address Verified,undefined,1882
+Auth Error Received,pay,1937
+Auth Error Received,undefined,19
+Authentication Error,pay,2848
+Authentication Error,presta,38
+Backend Checkout Completed,pay,6193
+Backend Credit Line Decreased,pay,670
+Backend Credit Line Increased,pay,1432
+Backend Credit Line Not Assigned,pay,455
+Backend Initial Credit Line Assigned,pay,3916
+Backend Initial Risk Segment Assigned,pay,6095
+Backend Loan Fulfilled,pay,4854
+Backend Loan Installment Payment Reminder,pay,11156
+Backend Loan Late Fee Created,pay,2321
+Backend Loan Payment Distribution Applied,pay,9452
+Backend Loan Reversed,pay,48
+Backend Manual Installments Modified,pay,113
+Backend Manual Payment Approved,pay,276
+Backend Payment Approved,pay,11673
+Backend Payment Intent Approved,pay,2330
+Backend Payment Intent Rejected,pay,214
+Backend Payment Rejected,pay,99641
+Backend Payment Session Created,pay,3301
+Backend Payment Session Express Onboarding Rejected,pay,201
+Backend Payment Session Updated,pay,354
+Backend Payment Velocity Rule Exceeded,pay,274
+Backend Risk Segment Downgraded,pay,242
+Backend Risk Segment Upgraded,pay,239
+Backend User Balance Updated,pay,35303
+Backend User Created,pay,5092
+Backend User ID Verification Requested,pay,1407
+Backend User Profile Completed,pay,1939
+Backend Vana Pay User Updated,pay,26
+Bank Account Submitted,pay,346
+Bank Account Update Attempt,presta,73492
+Bank Info Error,pay,73
+Bank Selected,pay,826
+Bank Ticket Confirmation,pay,2562
+Bank Ticket Upload,pay,3305
+Bank Ticket Upload Started,pay,3112
+Biometric Activation Completed,presta,2
+Biometric Activation Started,presta,2
+Biometric Unlock Succeeded,presta,13
+Bot Payment Details Required,undefined,687
+Card Activation Completed,card,213
+Card Activation Failed,card,5
+Card Activation Requested,card,340
+Card Activation Submitted,card,218
+Card Application Closed,card,16
+Card Application Confirmation Error,card,16
+Card Application Submitted,card,448
+Card Balance Loaded,card,3900
+Card Details Closed,card,138
+Card Details Opened,card,499
+Card Lock Requested,card,127
+Card Unlock Requested,card,86
+Change Payment Method Clicked,pay,345
+Change Phone Clicked,pay,332
+Change User Phone Number Button Pressed,presta,7
+Checkout Attempted,pay,8363
+Checkout Failed,pay,2045
+Checkout Receipt Downloaded,pay,4115
+Checkout Successful,pay,3180
+Checkout Under Review,pay,2025
+Close Application Button Pressed,presta,12055
+Close Card Application Button Pressed,card,35
+Close Liveness Validation Button Pressed,presta,87078
+Close Liveness Validation Button Pressed,pay,209
+Close Liveness Verification Button Pressed,presta,4496
+Close Loan Application Button Pressed,presta,133967
+Close Personal Info Button Pressed,pay,6472
+Confirm Delete Account Button Pressed,presta,2568
+Confirm Delete Account Button Pressed,pay,178
+Continue in the app,presta,778
+Contract Signature Failed,pay,9
+Contract Signature Started,pay,3423
+Contract Signature Submitted,presta,274785
+Contract Signature Submitted,pay,3423
+Contract Terms Clicked,pay,197
+Contract Terms Confirmed,pay,9086
+Create Account Button Pressed,presta,246794
+Create Account Instead Button Pressed,presta,6
+Credit Balance More Info Clicked,pay,4732
+Credit Card Added,pay,957
+Credit Card Changed,pay,3678
+Credit Card Changed Failed,pay,42
+Credit Card Deleted,pay,581
+Customer Unsubscribed,undefined,5
+Delete Account Button Pressed,pay,329
+Delete Account Request Successful,presta,2713
+Delete Account Request Unsuccessful,presta,1002
+Delete Credit Card Clicked,pay,1494
+Delete Credit Card Failed,pay,861
+Delete My Account Box Checked,pay,642
+Delete My Account Box Unchecked,pay,62
+Delivery Assigned,undefined,344
+Delivery Completed,undefined,208
+Delivery Confirmed,undefined,282
+Delivery Escalated,undefined,21
+Delivery Failed,undefined,74
+Delivery Intake Received,undefined,361
+Delivery Reassigned,undefined,51
+Delivery Rescheduled,undefined,100
+Delivery Started,undefined,287
+Digital Signature Authorization,pay,3659
+Disbursal Information Confirmed,presta,28907
+Disbursal Information Submitted,presta,47704
+Do it Later Button Pressed,presta,672
+Document Already Registered,pay,789
+Document Capture Failed,presta,26
+Document ID Error,pay,399
+Document Rejected,pay,108
+Document Verification Created,vana_presta,84706
+Document Verification Created,undefined,1
+Download Receipt Clicked,pay,3180
+Edit Cancelled,pay,1
+Edit Card Application Button Pressed,card,9
+Edit Disbursal Information Button Pressed,presta,20177
+Edit Loan Application Button Pressed,presta,13874
+Edit Mode Entered,pay,11
+Edit Saved,pay,6
+Email Already In Use,presta,396
+Email Bounced,undefined,204747
+Email Clicked,undefined,33083
+Email Converted,undefined,25030
+Email Dropped,undefined,11980
+Email Failed,undefined,29085
+Email Opened,undefined,1198232
+Email Spammed,undefined,44
+Email Update Attempt,card,15
+Erase Signature Button Tapped,presta,24693
+First Purchase Confirmed,undefined,5
+Go to Vana Pay Button Pressed,presta,5419
+Home Filter Selected,pay,4734
+ID Back Capture Completed,undefined,368
+ID Back Image Confirmation,pay,1519
+ID Back Upload Instructions,pay,1565
+ID Document Rejected,vana_presta,90554
+ID Document Rejected,undefined,78799
+ID Front Capture Completed,undefined,412
+ID Front Image Confirmation,pay,1788
+ID Front Upload Instructions,pay,2966
+ID Number Error,presta,3658
+ID Number Error,card,11
+ID Selfie Image Confirmation,pay,817
+ID Selfie Upload Instructions,pay,880
+ID Submitted,undefined,158024
+ID Submitted,vana_presta,154343
+ID Submitted,pay,2883
+ID Verification Completed,presta,2339
+ID Verification Dismissed,presta,481
+ID Verification Failed,undefined,77804
+ID Verification Failed,pay,139
+ID Verification Method,undefined,142046
+ID Verified,undefined,80936
+ID Verified,vana_presta,63092
+ID Verified,pay,1371
+Identity Verification Aborted,card,12
+Identity Verification Capture Error,card,664
+Identity Verification Completed,card,5
+Identity Verification Failed,card,14
+Identity Verification Flow Ready,card,205
+Identity Verification Module Completed,card,41
+Identity Verification Module Started,card,236
+Identity Verification Started,card,242
+Image Upload Option,presta,5176
+In_app Clicked,undefined,23406
+In_app Converted,undefined,4835
+In_app Failed,undefined,21605
+In_app Opened,undefined,111552
+In_app Sent,undefined,2019768
+Incentive Information Link Clicked,pay,171
+Incode Camera Retry,presta,2267
+Incode Flow Aborted,presta,161
+Incode Flow Completed,presta,733
+Incode Flow Ready,presta,1779
+Incode Module Completed,presta,3069
+Incode Module Failed,presta,29
+Incode Module Retry,presta,1
+Incode Module Started,presta,4081
+Invalid Credit Card Entered,pay,4089
+Invalid Expiration Date Entered,pay,277
+JS Error,pay,40891
+JS Error,undefined,29
+Late Payment See Details Clicked,pay,2206
+Liveness Capture Completed,undefined,243
+Liveness Fallback Continued,pay,62
+Liveness Fallback Resolved,pay,56
+Liveness Fallback Triggered,pay,25
+Liveness Verification Created,undefined,139585
+Liveness Verification Created,vana_presta,7
+Liveness Verification Failed,undefined,32887
+Liveness Verification Failed,presta,25967
+Liveness Verification Failed,vana_presta,719
+Liveness Verification Failed,pay,125
+Liveness Verification Started,presta,638843
+Liveness Verification Success,undefined,109592
+Liveness Verification Success,presta,17179
+Liveness Verification Success,vana_presta,3597
+Liveness Verification Success,pay,2273
+Loan 1 Application Approved,undefined,128825
+Loan 1 Application Rejected,undefined,51121
+Loan 1 Fulfilled,undefined,38419
+Loan 1 Released,undefined,56433
+Loan Application Approved,undefined,406279
+Loan Application Closed,presta,5856
+Loan Application Confirmation Error,presta,12497
+Loan Application Rejected,undefined,78441
+Loan Application Submitted,undefined,439127
+Loan Application Submitted,presta,2
+Loan Eligibility Rejected,pay,20785
+Loan Fulfilled,undefined,245022
+Loan Offer Accepted,undefined,365421
+Loan Offer Accepted,presta,2
+Loan Offer Expired,undefined,83713
+Loan Offer Rejected,presta,2
+Loan Release Delayed,undefined,290
+Loan Released,undefined,297918
+Loan Tracking Updated,pay,116464
+Loan Transfer Failed,undefined,7370
+Loan Transfer Processing,undefined,302535
+Log In Instead Button Pressed,presta,115509
+Log In Instead Button Pressed,pay,1181
+Logged Out,presta,64739
+Logged Out,pay,291
+Login Attempt,presta,524625
+Login Attempt,pay,16988
+Login Attempted,pay,2379
+Login Button Pressed,presta,260341
+Login Clicked,pay,9782
+Login Clicked,card,1015
+Login Failed,pay,1018
+Login Succeeded,pay,2731
+Logout Attempted,pay,467
+Logout Button Pressed,presta,53851
+Logout Button Pressed,pay,2016
+Logout Button Pressed,undefined,232
+Logout Failed,pay,23
+Logout Succeeded,pay,439
+Merchant Card Clicked,pay,16505
+Merchant Searched,pay,7954
+Merge Account Alert Pressed,presta,13620
+Merge Account Confirmed,undefined,1860
+Merge Account Confirmed,presta,749
+Merge Account Iniciated,presta,4709
+Merge Account Initiated,undefined,9444
+NPS Sent,undefined,40760
+NPS Survey Submitted,undefined,2255
+New Payment Plan Offered,pay,804
+Notification Inbox Pressed,presta,464255
+Notification Inbox Viewed,presta,698621
+Onboarding Completed,presta,5
+Order Created,pay,8048
+Order Creation Attempted,pay,8441
+Order Creation Failed,pay,380
+Order Details Clicked,pay,2680
+Order Details Displayed,pay,2680
+Order Link Copy Clicked,pay,2706
+Order Link Share Clicked,pay,176
+Origination Evaluated,pay,6469
+PIN Authenticated,presta,228238
+PIN Authenticated,pay,34719
+PIN Authenticated,undefined,2870
+PIN Created,presta,184722
+PIN Created,pay,405
+PIN Incorrect,presta,47332
+PIN Incorrect,pay,4964
+PIN Incorrect,undefined,254
+PIN Reset,presta,32552
+PIN Reset,pay,2950
+PIN Reset,undefined,60
+PIN Submit,pay,36944
+Password Change Completed,pay,8
+Password Change Modal Dismissed,pay,5
+Password Change Submitted,pay,8
+Paste Button Pressed,presta,21727
+Payment Amount Confirmed,card,128
+Payment Approved,undefined,299666
+Payment Approved,card,19
+Payment Cancelled,undefined,56764
+Payment Created,undefined,346713
+Payment Expired,undefined,12461
+Payment Intent Created,card,46
+Payment Method Selected,pay,8304
+Payment Method Selected,card,131
+Payment Method Update Failed,pay,4
+Payment Plan Modified,pay,450
+Payment Plan Selected,pay,12414
+Payment Rejected,undefined,5370
+Payment Retry Attempted,pay,4386
+Payment Session Rejected,pay,146
+Payment Session Review Requested,pay,2132
+Payment Started,pay,2124
+Payment Started,card,422
+Payment Submitted,presta,40602
+Payment Submitted,pay,2485
+Payment calculator amount entered,pay,10193
+Payment calculator calculated,pay,5138
+Payment calculator closed,pay,4983
+Payment calculator failed,pay,19
+Payment calculator opened,pay,5565
+Payment calculator plan selected,pay,8105
+Payment calculator recalculated,pay,1082
+Personal Form Submitted Failed,pay,11614
+Personal Form Submitted Success,pay,3123
+Personal Income Submitted Failed,pay,6
+Personal Income Submitted Success,pay,3929
+Personal Info Error,pay,44
+Personal Info Submitted,pay,461
+Phone Already Registered,presta,125639
+Phone Already Registered,pay,97
+Phone Verification Attempt,pay,12703
+Phone Verified,presta,593949
+Phone Verified,pay,20557
+Phone Verified,undefined,1093
+Pin Created,pay,910
+Pin Created,undefined,76
+Problem Reported,undefined,2
+Promo Code Applied,undefined,22134
+Promo Code Granted,undefined,14688
+Promotion Displayed,pay,11941
+Push Attempted,undefined,14937
+Push Bounced,undefined,81462
+Push Converted,undefined,253064
+Push Delivered,undefined,335831
+Push Drafted,undefined,47810
+Push Dropped,undefined,488109
+Push Failed,undefined,110
+Push Opened,undefined,310471
+Rate Later Button Pressed,presta,1
+Recover PIN Button Pressed,presta,20801
+Recover PIN Button Pressed,pay,1969
+Recover PIN Button Pressed,undefined,64
+Reference Contact Added,presta,35978
+Reference Contact Added,pay,2111
+Reference Contact Added,card,167
+Reference Contact Removed,card,20
+Reference Error,presta,6781
+Referral Home Video,presta,7873
+Referral Promo Applied,undefined,3975
+Referral Reward Transfer Confirmed,undefined,6411
+Referral Statistics,presta,2678
+Refund Benefit Explained,undefined,176
+Registration Clicked,pay,3306
+Registration Clicked,card,170
+Registration Completed,presta,127172
+Registration Completed,pay,2144
+Registration Completed,undefined,74
+Resend Email Address Verification Button Pressed,card,41
+Resend Phone Verification Button Pressed,presta,113955
+Resend Phone Verification Button Pressed,pay,1731
+Resend Phone Verification Button Pressed,undefined,6
+Retake Address Receipt Image Button Pressed,presta,636
+Retake ID Image Button Pressed,presta,27806
+Retake ID Image Button Pressed,pay,583
+Retry Liveness Validation Button Pressed,presta,168139
+Retry Liveness Validation Button Pressed,pay,389
+Retry Liveness Verification Button Pressed,presta,42
+Review Edit Clicked,pay,9
+Review Section Expanded,pay,55
+Rewards Challenge Claimed,undefined,27456
+Rewards Challenge Completed,undefined,44963
+Rewards Challenge Information,presta,345044
+Rewards Expectancy Disbursement Button Pressed,presta,2459
+Rewards Referral Expectancy,presta,4
+Rewards Tooltips,presta,5361
+Risk Analysis Score,undefined,141603
+Segment Upgrade Animation Displayed,pay,3
+Select Credit Card Clicked,pay,1225
+Selected Receipt Type,presta,5483
+Selfie Upload Attempt,pay,2446
+Send Bank Ticket Clicked,card,45
+Send Document Failed,presta,7
+SignUp Attempt,presta,394691
+SignUp Attempt,pay,4842
+SignUp Instead Button Pressed,presta,61426
+SignUp Instead Button Pressed,pay,901
+Start Card Application Button Pressed,card,1067
+Start Loan Application Button Pressed,presta,836551
+Training Completed,undefined,173
+User Challenge Progress Start,undefined,53314
+User Phone Update Confirmed,undefined,1241
+User Phone Update Initiated,undefined,3239
+VRM Cashout Initiated,pay,1835
+VRM Cashout Processing Started,pay,1480
+Vana Pay Onboarding Completed,pay,5046
+Verification.Provider.Finished,undefined,735
+View Cash Pickup Locations Button Pressed,presta,734
+View Privacy Policy Button Pressed,presta,90
+View Service Receipt Number Button Pressed,pay,60
+View Service Receipt Number Instructions Button Pressed,presta,589
+View Terms Button Pressed,presta,111
+Viewed,undefined,3887
+Viewed Account Details,presta,203011
+Viewed Account Details,pay,2030
+Viewed Account Details,undefined,80
+Viewed Address Confirmation,presta,9869
+Viewed Address Receipt,presta,7575
+Viewed Address Receipt Image Confirmation,presta,2220
+Viewed Address Receipt Upload Instructions,presta,2294
+Viewed Address Verification Intro,presta,2994
+Viewed Bank Account Confirmation,presta,320221
+Viewed Bank Account Details,presta,420526
+Viewed Bank Account Info,presta,233630
+Viewed Bank Account Information,presta,174846
+Viewed Bank Account Update,presta,127516
+Viewed Bank Account Viewed,pay,504
+Viewed Bank Image Confirmation,presta,226025
+Viewed Bank Payment Method Selection,presta,212346
+Viewed Bank Selection,presta,483506
+Viewed Bank Ticket  Details,presta,359188
+Viewed Bank Ticket Upload,presta,283713
+Viewed Banking Info,pay,26
+Viewed Biometric Prompt Entry,presta,5
+Viewed Bureau Consent Clause Confirmation,presta,65113
+Viewed Card Activation Started,card,246
+Viewed Cash Pickup,presta,5106
+Viewed Cash Pickup More Information,presta,1683
+Viewed Checkout,pay,15522
+Viewed Checkout Completed,pay,4517
+Viewed Checkout Failed,pay,2629
+Viewed Checkout Thank You,pay,2148
+Viewed Coupons,presta,139677
+Viewed Credit Aplication Confirmation,pay,4604
+Viewed Credit Pre-approval Loading,pay,10558
+Viewed Credit Pre-approval Rejected,pay,56
+Viewed Delete Account,presta,10839
+Viewed Delete Account,pay,271
+Viewed Detalle de orden,pay,2678
+Viewed Disbursal Methods,presta,32544
+Viewed Email Update,presta,29168
+Viewed Enter Current PIN,presta,80243
+Viewed Formulario agregar vendedor,pay,919
+Viewed Formulario editar vendedor,pay,318
+Viewed Help Center,presta,41181
+Viewed Help Center,pay,151
+Viewed HelpCenter,presta,371905
+Viewed Historial,pay,12998
+Viewed Home,presta,8464375
+Viewed ID Back Image Confirmation,presta,178526
+Viewed ID Back Upload Instructions,presta,225876
+Viewed ID Document On Cooldown,presta,3286
+Viewed ID Document Upload,presta,213407
+Viewed ID Front Image Confirmation,presta,177352
+Viewed ID Front Upload Instructions,presta,344545
+Viewed ID Selfie Image Confirmation,presta,24395
+Viewed ID Selfie Upload Instructions,presta,30912
+Viewed ID Verification Cooldown,pay,20
+Viewed ID Verification Intro,presta,182982
+Viewed ID Verification Intro,pay,4740
+Viewed ID Verification Requested,pay,1462
+Viewed ID Verification Upload,pay,1386
+Viewed Identity Verification Intro,card,249
+Viewed Instant Transfer,presta,7408
+Viewed Instant Transfer Information,presta,11
+Viewed Instant Transfer Instructions,presta,138
+Viewed Liveness Verification Started,pay,2982
+Viewed Loan Agreement,presta,84966
+Viewed Loan Application Confirmation,presta,384131
+Viewed Loan Breakout,presta,488930
+Viewed Loan Details,presta,436140
+Viewed Loan Uploading,presta,359967
+Viewed Login Landing Telus,pay,3
+Viewed Merchant Login,pay,2446
+Viewed Merge Account Intro,presta,15464
+Viewed More Information Onboarding,presta,52413
+Viewed Notification Inbox,presta,718265
+Viewed Offer,presta,676086
+Viewed Offer Confirmation,presta,386278
+Viewed Onboarding,presta,1110800
+Viewed Onboarding 1,presta,374
+Viewed Onboarding 2,presta,14
+Viewed Onboarding 3,presta,7
+Viewed Onboarding 4,presta,5
+Viewed Orden generada,pay,7968
+Viewed Orders In Progress Displayed,pay,8921
+Viewed PIN Authentication,presta,3491278
+Viewed PIN Authentication,pay,6455
+Viewed PIN Authentication,undefined,2325
+Viewed PIN Confirmation,presta,185327
+Viewed PIN Creation,presta,228823
+Viewed PIN Creation,pay,2903
+Viewed PIN Creation,undefined,36
+Viewed PIN Creation Instructions,presta,184547
+Viewed PIN Creation Instructions,pay,3611
+Viewed PIN Creation Instructions,undefined,32
+Viewed PIN Reset Success,presta,48509
+Viewed PIN Reset Success,pay,1024
+Viewed PIN Reset Success,undefined,30
+Viewed PIN Update Instructions,presta,4069
+Viewed Password and Security,presta,39007
+Viewed Pay Personal Info,pay,2720
+Viewed Pay with Vana Cash,presta,11759
+Viewed Pay with Vana Cash Confirmation,presta,5303
+Viewed Pay with Vana Cash Details,presta,48
+Viewed Payment Chain Information,presta,175697
+Viewed Payment Chain Selection,presta,267715
+Viewed Payment Methods,presta,193292
+Viewed Payment Methods Selection,presta,749157
+Viewed Payment Reference,presta,46261
+Viewed Payment Reference Confirmation,presta,93880
+Viewed Payment Reference Creation,presta,112252
+Viewed Permissions Instructions,presta,261528
+Viewed Personal Info Viewed,pay,849
+Viewed Personal Information 1,presta,288293
+Viewed Personal Information 1,pay,4705
+Viewed Personal Information 2,presta,192611
+Viewed Personal Information 2,pay,3211
+Viewed Personal Information 3,presta,219203
+Viewed Phone Input,presta,1082009
+Viewed Phone Input,pay,10598
+Viewed Phone Update Email Input,presta,98829
+Viewed Phone Update Email Input,pay,600
+Viewed Phone Update Email Input,undefined,14
+Viewed Phone Update Email PIN Verification,presta,19511
+Viewed Phone Update Email PIN Verification,pay,88
+Viewed Phone Update Email PIN Verification,undefined,4
+Viewed Phone Update Info,presta,24317
+Viewed Phone Update Number Input,presta,13452
+Viewed Phone Update Number Input,pay,75
+Viewed Phone Update Number Input,undefined,4
+Viewed Phone Update Success,presta,2736
+Viewed Phone Update Success,pay,22
+Viewed Phone Update Success,undefined,2
+Viewed Phone Update Verification Code Input,presta,5946
+Viewed Phone Update Verification Code Input,pay,33
+Viewed Phone Update Verification Code Input,undefined,2
+Viewed Phone Verification Code Input,presta,737871
+Viewed Phone Verification Code Input,pay,9329
+Viewed Phone Verification Code Input,undefined,74
+Viewed Phone Verification Confirmation,presta,558292
+Viewed Phone Verification Confirmation,pay,5103
+Viewed Phone Verification Confirmation,undefined,1018
+Viewed Pin Confirmation,pay,621
+Viewed Pin Creation,pay,325
+Viewed Pin Creation,undefined,76
+Viewed Primary Offer Displayed,pay,2398
+Viewed Privacy Policy,presta,2117
+Viewed Promissory Note,presta,261068
+Viewed Promo and Referral Code Entry,presta,79113
+Viewed Reference,presta,502081
+Viewed Reference,pay,4081
+Viewed Referral Program,presta,222284
+Viewed Reset Email OTP Auth,presta,39828
+Viewed Reset PIN Requirements,presta,82939
+Viewed Reset PIN Requirements,pay,3127
+Viewed Reset PIN Requirements,undefined,50
+Viewed Review Viewed,pay,356
+Viewed Rewards Challenge Completed Screen,presta,25992
+Viewed Rewards Home,presta,860074
+Viewed Select Receipt Type,presta,8139
+Viewed Temporary PIN Authentication,presta,83721
+Viewed Temporary PIN Authentication,pay,1494
+Viewed Temporary PIN Authentication,undefined,39
+Viewed Terms Of Service,presta,4325
+Viewed Tu negocio,pay,24684
+Viewed User Personal Info,presta,194098
+Viewed User Profile,presta,1176357
+Viewed User Segmentation Loader,pay,2548
+Viewed VRM Earnings Viewed,pay,8873
+Viewed VRM Loaded,pay,6068
+Viewed VRM Viewed,pay,14842
+Viewed VRM Wallet Information,pay,135
+Viewed Vana Card Landing,card,572
+Viewed Vana Pay Home,pay,82691
+Viewed Vana Pay Landing,pay,42625
+Viewed Vana Pay Plans Selection,pay,8959
+Viewed Viewed Bureau Consent Clause Confirmation,presta,10842
+Viewed Viewed Card Request Confirmation,card,469
+Viewed Viewed Card Statement,card,424
+Viewed Viewed Home Rewards,presta,156615
+Viewed Viewed Loan Application Confirmation,presta,69582
+Viewed Viewed Loan Details,presta,70671
+Viewed Viewed Offer Confirmation,presta,65071
+Viewed Viewed Personal Information 1,presta,43190
+Viewed Viewed Personal Information 1,card,592
+Viewed Viewed Personal Information 2,presta,32839
+Viewed Viewed Personal Information 2,card,500
+Viewed Viewed Personal Information 3,presta,32979
+Viewed Viewed Personal Information 3,card,518
+Viewed Viewed Reference,presta,26009
+Viewed Viewed References,card,475
+Viewed Viewed Rewards Challenge Completed Screen,presta,2134
+Viewed Viewed Rewards Challenge Information,presta,8413
+Viewed Viewed Transactions History,card,1668
+Viewed Viewed Wallet Category,presta,33388
+Viewed Viewed Wallet Home,presta,28964
+Viewed Viewed Wallet Information,presta,1701
+Viewed Viewed Wallet Onborading,presta,14
+Viewed Viewed Wallet Store,presta,42
+Viewed Viewed Work Information 1,presta,31027
+Viewed Viewed Work Information 1,card,522
+Viewed Viewed Work Information 2,presta,30568
+Viewed Viewed Work Information 2,card,529
+Viewed Viewed Work Information 3,presta,30566
+Viewed Viewed Work Information 3,card,512
+Viewed Wallet Category,presta,61938
+Viewed Wallet Giftcards,presta,16529
+Viewed Wallet Home,presta,167498
+Viewed Wallet Onboarding,presta,229100
+Viewed Wallet Purchase Confirmation,presta,9
+Viewed Wallet Purchase Review,presta,10496
+Viewed Wallet Store,presta,19861
+Viewed Wallet Subcategory,presta,12007
+Viewed Wallet Transactions,presta,40723
+Viewed Work Information 1,presta,176361
+Viewed Work Information 1,pay,26
+Viewed Work Information 2,presta,180988
+Viewed Work Information 2,pay,5349
+Viewed Work Information 3,presta,179612
+Viewed Yape Information,presta,15879
+Viewed active,presta,9
+Viewed digital signature authorization,presta,11558
+Wallet Cash-In,undefined,38839
+Wallet Disbursal Updated,undefined,28854
+Wallet Information,presta,5345
+Wallet Onboarding,undefined,1580
+Wallet Purchase Completed,undefined,3871
+Wallet Roll-back,undefined,4055
+Webhook Converted,undefined,404182
+Webhook Failed,undefined,95787
+connected,undefined,82661
+created payment promise,undefined,61063
+expired payment promise,undefined,43670
+fulfilled payment promise,undefined,10232
+not_connected,undefined,671271
+voicemail,undefined,883362

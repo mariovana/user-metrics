@@ -11,7 +11,13 @@ Tener un mapeo general de **todos** los eventos que existen en vana y sus produc
 | Archivo | Descripción |
 |---|---|
 | [`docs/event-mapping.md`](docs/event-mapping.md) | Análisis completo: inventario, clusters de duplicados, problemas de naming y taxonomía canónica propuesta |
+| [`docs/dashboard/index.html`](docs/dashboard/index.html) | **Dashboard visual** (autocontenido, listo para GitHub Pages): KPIs, desglose por producto, clusters de duplicados y explorador de los 534 eventos |
 | [`data/mixpanel_event_inventory.csv`](data/mixpanel_event_inventory.csv) | Inventario crudo: 551 eventos con volumen de 30 días, metadata de Lexicon (verified/hidden/dropped, tags, descripción) |
+| [`data/mixpanel_event_by_product.csv`](data/mixpanel_event_by_product.csv) | Matriz evento × producto (`product_context`): 640 filas con volumen de 30 días |
+
+### Ver el dashboard en GitHub Pages
+
+El dashboard es un HTML autocontenido (datos embebidos, sin backend). Para publicarlo: **Settings → Pages → Deploy from a branch**, elegir la rama y la carpeta `/docs`; quedará en `https://<org>.github.io/user-metrics/dashboard/`. También se puede abrir el archivo localmente en el navegador.
 
 ## Fuente de datos
 

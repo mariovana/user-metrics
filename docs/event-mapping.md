@@ -225,9 +225,27 @@ Basada en el estándar *Object + Action (past tense)* que recomienda Segment, qu
 
 ---
 
-## 9. Pendientes / limitaciones de esta fase
+## 9. Desglose por producto (`product_context`)
 
-- **Sin acceso a Segment aún**: no podemos atribuir cada evento a su *source* de origen (app iOS/Android/web/backend por producto). El corte por producto se estimó por nombre y dominio; falta validarlo con los workspaces de Mixpanel y con los equipos.
-- Los volúmenes son totales del proyecto (workspace global); falta el desglose por workspace *vana pay* / *vana presta* / *vana card*.
+La dimensión de producto vive en la propiedad de evento **`product_context`**. Datos completos en [`data/mixpanel_event_by_product.csv`](../data/mixpanel_event_by_product.csv); visual en el [dashboard](dashboard/index.html).
+
+| Valor | Volumen 30d | Eventos distintos | Nota |
+|---|---|---|---|
+| `presta` | 40,446,453 (75%) | 225 | La app principal: onboarding, auth, wallet, rewards y préstamos viven aquí |
+| *(sin valor)* | 11,998,615 (22%) | 128 | CRM (Email/Push/In-app), ciclo de préstamo backend, dialer (`voicemail` etc.), deliveries |
+| `pay` | 1,199,093 | 231 | vana pay: checkout, órdenes, merchants, calculadora de pagos |
+| `vana_presta` | 397,018 | 7 | **Valor duplicado de `presta`** — solo lo emite el servicio KYC backend (ID Submitted, Document Verification…) |
+| `card` | 18,042 | 49 | vana card (producto joven); aquí corre el rollout de la familia nueva `Identity Verification *` |
+
+Hallazgos:
+- **62 eventos aparecen en más de un producto** (auth, KYC, perfil): el mismo flujo se instrumentó por producto en lugar de compartir librería común.
+- Existe una propiedad rival casi muerta, **`context_product`** (`Credit` 39k / `Pay` 3.6k) — otro caso de duplicación, ahora a nivel propiedad.
+- La plataforma vive en **`source_app`** (`vana_android_app` 35.8M, `vana_web_app` 5.7M, `vana_pay_vrm`, `lms`, `casas_de_cobranza`, `internal_tools_automated_process`), con 12.4M sin valor.
+- El bug `Viewed Viewed *` afecta tanto a `presta` como a `card` — el wrapper defectuoso es compartido.
+- Estandarizar `product_context` (unificar `vana_presta`→`presta`, exigirlo en eventos backend/CRM) es prerequisito del tracking plan canónico.
+
+## 10. Pendientes / limitaciones de esta fase
+
+- **Sin acceso a Segment aún**: falta atribuir cada evento a su *source* de Segment y cargar el tracking plan a Protocols.
 - La asignación de dominio (§4) es heurística y debe validarse con cada squad.
-- Falta inventariar propiedades (siguiente fase: `List-Properties` por evento núcleo para detectar props duplicadas tipo `email_verified` vs `emailVerified`).
+- Falta inventariar propiedades (siguiente fase: `List-Properties` por evento núcleo para detectar props duplicadas tipo `email_verified` vs `emailVerified` — ya hay dos confirmadas: `product_context` vs `context_product`).

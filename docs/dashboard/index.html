@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Mapa de eventos de vana en Mixpanel: inventario, duplicados y taxonomía canónica">
+<title>Mapa de Eventos vana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --ring: rgba(11,11,11,0.10);
+    --accent: #256abf;
+    --accent-ink: #1c5cab;
+    --wash: rgba(42,120,214,0.07);
+    --p-presta: #2a78d6;
+    --p-pay: #eb6834;
+    --p-card: #1baf7a;
+    --p-vpresta: #eda100;
+    --p-none: #898781;
+    --critical: #d03b3b;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --good-text: #006300;
+    --chip-crit-bg: rgba(208,59,59,0.10);
+    --chip-warn-bg: rgba(250,178,25,0.14);
+    --chip-info-bg: rgba(42,120,214,0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --ring: rgba(255,255,255,0.10);
+      --accent: #3987e5;
+      --accent-ink: #86b6ef;
+      --wash: rgba(57,135,229,0.12);
+      --p-presta: #3987e5;
+      --p-pay: #d95926;
+      --p-card: #199e70;
+      --p-vpresta: #c98500;
+      --p-none: #898781;
+      --critical: #d03b3b;
+      --warning: #fab219;
+      --serious: #ec835a;
+      --good-text: #0ca30c;
+      --chip-crit-bg: rgba(208,59,59,0.18);
+      --chip-warn-bg: rgba(250,178,25,0.16);
+      --chip-info-bg: rgba(57,135,229,0.16);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --baseline: #383835;
+    --ring: rgba(255,255,255,0.10);
+    --accent: #3987e5;
+    --accent-ink: #86b6ef;
+    --wash: rgba(57,135,229,0.12);
+    --p-presta: #3987e5;
+    --p-pay: #d95926;
+    --p-card: #199e70;
+    --p-vpresta: #c98500;
+    --p-none: #898781;
+    --critical: #d03b3b;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --good-text: #0ca30c;
+    --chip-crit-bg: rgba(208,59,59,0.18);
+    --chip-warn-bg: rgba(250,178,25,0.16);
+    --chip-info-bg: rgba(57,135,229,0.16);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 72px; }
+
+  h1, h2, h3 { font-family: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif; text-wrap: balance; }
+  h1 { font-size: clamp(30px, 4.4vw, 44px); font-weight: 800; line-height: 1.05; letter-spacing: -0.015em; }
+  h2 { font-size: 21px; font-weight: 700; margin-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; }
+  .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 10px; }
+  .sub { color: var(--ink-2); max-width: 68ch; }
+  section { margin-top: 52px; }
+  .sec-head { margin-bottom: 20px; }
+  .sec-head .sub { font-size: 14px; }
+
+  header.hero { padding-bottom: 8px; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .meta-pill {
+    font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px;
+    color: var(--ink-2); background: var(--surface); border: 1px solid var(--ring);
+    border-radius: 999px; padding: 4px 12px;
+  }
+
+  .card { background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; }
+
+  /* KPI tiles */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 10px; margin-top: 26px; }
+  .kpi { padding: 16px 16px 14px; }
+  .kpi .v { font-family: "Bricolage Grotesque", sans-serif; font-size: 30px; font-weight: 800; line-height: 1.1; }
+  .kpi .v small { font-size: 17px; font-weight: 700; color: var(--ink-2); }
+  .kpi .l { font-size: 12.5px; color: var(--ink-2); margin-top: 4px; line-height: 1.35; }
+  .kpi.flag .v { color: var(--critical); }
+
+  /* Product bars */
+  .prod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 840px) { .prod-grid { grid-template-columns: 1fr; } }
+  .chart { padding: 20px; }
+  .chart h3 { margin-bottom: 2px; }
+  .chart .note { font-size: 12.5px; color: var(--muted); margin-bottom: 16px; }
+  .brow { display: grid; grid-template-columns: 118px 1fr; align-items: center; gap: 12px; padding: 7px 0; }
+  .brow .lbl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+  .brow .track { position: relative; height: 22px; }
+  .brow .bar { position: absolute; inset: 0 auto 0 0; border-radius: 0 4px 4px 0; min-width: 2px; }
+  .brow .val {
+    position: absolute; left: calc(var(--w) + 8px); top: 50%; transform: translateY(-50%);
+    font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink); white-space: nowrap;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .prod-note { font-size: 13px; color: var(--ink-2); margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--grid); }
+  .prod-note strong { color: var(--ink); }
+
+  /* Clusters */
+  .clusters { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
+  .cluster { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .cluster-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; border-radius: 999px; padding: 2.5px 9px; white-space: nowrap; }
+  .chip-crit { background: var(--chip-crit-bg); color: var(--critical); }
+  .chip-warn { background: var(--chip-warn-bg); color: var(--ink); }
+  .chip-info { background: var(--chip-info-bg); color: var(--accent-ink); }
+  .vrow { display: grid; grid-template-columns: minmax(0, 1fr) 74px; gap: 10px; align-items: center; padding: 3px 0; }
+  .vrow .name { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink); overflow-wrap: break-word; line-height: 1.35; }
+  .vrow .name .tag { color: var(--critical); font-weight: 600; }
+  .vrow .mini { display: flex; flex-direction: column; gap: 3px; }
+  .vrow .mini .mtrack { height: 6px; background: none; position: relative; }
+  .vrow .mini .mbar { position: absolute; inset: 0 auto 0 0; border-radius: 0 3px 3px 0; min-width: 2px; background: var(--accent); opacity: 0.85; }
+  .vrow .mini .mval { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-2); text-align: left; font-variant-numeric: tabular-nums; }
+  .cluster .fix { font-size: 12.5px; color: var(--ink-2); border-top: 1px solid var(--grid); padding-top: 10px; margin-top: auto; }
+  .cluster .fix code { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--good-text); font-weight: 600; }
+
+  /* Naming issues */
+  .issues { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+  .issue { padding: 16px; }
+  .issue .t { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .issue p { font-size: 13px; color: var(--ink-2); }
+  .issue p code { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--ink); background: var(--wash); padding: 1px 5px; border-radius: 4px; }
+
+  /* Explorer */
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+  .search {
+    flex: 1 1 260px; max-width: 380px; font: inherit; font-size: 14px; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--ring); border-radius: 8px; padding: 9px 13px;
+  }
+  .search:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .fbtn {
+    font: inherit; font-size: 13px; font-weight: 500; color: var(--ink-2); cursor: pointer;
+    background: var(--surface); border: 1px solid var(--ring); border-radius: 999px; padding: 7px 14px;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .fbtn:hover { background: var(--wash); }
+  .fbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .fbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); background: var(--wash); font-weight: 600; }
+  .count-note { font-size: 13px; color: var(--muted); margin-left: auto; }
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 760px; }
+  thead th {
+    text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--baseline);
+    position: sticky; top: 0; background: var(--surface); z-index: 1;
+  }
+  thead th.num { text-align: right; }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+  tbody tr:hover { background: var(--wash); }
+  td.ev { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; max-width: 380px; overflow-wrap: break-word; }
+  td.num { text-align: right; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pchip { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--ink-2); margin-right: 10px; white-space: nowrap; }
+  .pchip .dot { width: 8px; height: 8px; }
+  .flagchips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .more-note { padding: 12px; text-align: center; }
+  .morebtn { font: inherit; font-size: 13px; font-weight: 600; color: var(--accent-ink); background: none; border: none; cursor: pointer; padding: 6px 10px; }
+  .morebtn:hover { text-decoration: underline; }
+  .morebtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 4px; }
+
+  /* Taxonomy */
+  .tax-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 840px) { .tax-grid { grid-template-columns: 1fr; } }
+  .tax { padding: 20px; }
+  .tax ol, .tax ul { padding-left: 20px; display: flex; flex-direction: column; gap: 9px; margin-top: 12px; }
+  .tax li { font-size: 13.5px; color: var(--ink-2); }
+  .tax li strong { color: var(--ink); }
+  .tax li code { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--good-text); font-weight: 600; }
+  .phase { display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--grid); }
+  .phase:last-child { border-bottom: none; }
+  .phase .n {
+    width: 26px; height: 26px; border-radius: 999px; background: var(--wash); color: var(--accent-ink);
+    display: grid; place-items: center; font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; font-size: 13px;
+  }
+  .phase .d { font-size: 13.5px; color: var(--ink-2); }
+  .phase .d strong { color: var(--ink); display: block; }
+
+  footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--grid); font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 24px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .brow .bar, .vrow .mini .mbar { transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Tribu User &amp; Growth · Instrumentación centralizada</div>
+    <h1>Mapa de Eventos vana</h1>
+    <p class="sub" style="margin-top:14px">Inventario vivo de todos los eventos de <em>vana</em>, <em>vana pay</em>, <em>vana presta</em> y <em>vana card</em> en Mixpanel: qué existe, cuánto tráfico tiene, dónde hay duplicados y hacia qué taxonomía canónica converger.</p>
+    <div class="meta-row">
+      <span class="meta-pill">corte 2026-08-28</span>
+      <span class="meta-pill">ventana: últimos 30 días</span>
+      <span class="meta-pill">fuente: Mixpanel · proyecto Vana (3370988)</span>
+    </div>
+
+    <div class="kpis">
+      <div class="card kpi"><div class="v">544</div><div class="l">eventos distintos activos</div></div>
+      <div class="card kpi"><div class="v">54.1<small>M</small></div><div class="l">ocurrencias en 30 días</div></div>
+      <div class="card kpi"><div class="v">62<small>%</small></div><div class="l">del volumen son vistas de pantalla (177 eventos <span style="font-family:'IBM Plex Mono',monospace">Viewed *</span>)</div></div>
+      <div class="card kpi flag"><div class="v">10</div><div class="l">clusters de duplicados activos</div></div>
+      <div class="card kpi flag"><div class="v">23</div><div class="l">eventos con doble prefijo <span style="font-family:'IBM Plex Mono',monospace">Viewed Viewed</span></div></div>
+      <div class="card kpi flag"><div class="v">0.2<small>%</small></div><div class="l">verificados en Lexicon (1 de 545)</div></div>
+    </div>
+  </header>
+
+  <section id="productos">
+    <div class="sec-head">
+      <h2>Desglose por producto</h2>
+      <p class="sub">Atribución vía la propiedad <code style="font-family:'IBM Plex Mono',monospace;font-size:13px">product_context</code>. El valor <strong>vana_presta</strong> es en sí un duplicado de <strong>presta</strong> (lo emite solo el servicio KYC backend, 7 eventos), y el 22% del volumen no trae producto: CRM, ciclo de préstamo backend y el ruido del dialer.</p>
+    </div>
+    <div class="prod-grid">
+      <div class="card chart">
+        <h3>Volumen · 30 días</h3>
+        <div class="note">ocurrencias por producto (escala lineal)</div>
+        <div id="chart-vol"></div>
+      </div>
+      <div class="card chart">
+        <h3>Eventos distintos</h3>
+        <div class="note">cuántos nombres de evento emite cada producto</div>
+        <div id="chart-cnt"></div>
+        <div class="prod-note"><strong>62 eventos aparecen en más de un producto.</strong> El mismo flujo (auth, KYC, perfil) se instrumentó por producto en lugar de compartir una librería común.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="duplicados">
+    <div class="sec-head">
+      <h2>Clusters de duplicados activos</h2>
+      <p class="sub">Misma acción, distinto nombre — todas las variantes reciben tráfico hoy. Barras escaladas dentro de cada cluster; volumen = 30 días.</p>
+    </div>
+    <div class="clusters" id="clusters"></div>
+  </section>
+
+  <section id="naming">
+    <div class="sec-head">
+      <h2>Problemas sistémicos de naming</h2>
+    </div>
+    <div class="issues">
+      <div class="card issue">
+        <div class="t"><span class="chip chip-warn">⚠ convención</span><h3>3 vocabularios de acción UI</h3></div>
+        <p>37 eventos <code>* Button Pressed</code>, 20 <code>* Clicked</code>, 1 <code>* Tapped</code> — la misma semántica con tres nombres; imposible consultar "todos los taps" de forma genérica.</p>
+      </div>
+      <div class="card issue">
+        <div class="t"><span class="chip chip-crit">✕ typos</span><h3>Typos con tráfico real</h3></div>
+        <p><code>Viewed Bank Ticket  Details</code> (doble espacio) recibe <strong>358,851</strong>/30d; <code>Merge Account Iniciated</code> 4,701; <code>Viewed Credit Aplication Confirmation</code> 4,604; <code>Viewed Viewed Wallet Onborading</code>.</p>
+      </div>
+      <div class="card issue">
+        <div class="t"><span class="chip chip-warn">⚠ idioma</span><h3>Español e inglés mezclados</h3></div>
+        <p><code>Viewed Tu negocio</code>, <code>Viewed Detalle de orden</code>, <code>Viewed Orden generada</code>, <code>Viewed Historial</code>, <code>Venta Exitosa</code> conviven con el inglés dominante.</p>
+      </div>
+      <div class="card issue">
+        <div class="t"><span class="chip chip-warn">⚠ estilo</span><h3>Casing sin regla</h3></div>
+        <p>Title Case domina, pero hay sentence case (<code>Payment calculator opened</code>), snake (<code>In_app Opened</code>), minúsculas (<code>created payment promise</code>) y dot notation (<code>Verification.Provider.Finished</code>).</p>
+      </div>
+      <div class="card issue">
+        <div class="t"><span class="chip chip-crit">✕ ruido</span><h3>Un dialer bombeando eventos</h3></div>
+        <p><code>voicemail</code> (883k), <code>not_connected</code> (671k) y <code>connected</code> (83k) — 1.6M eventos/30d de contact-center sin producto que contaminan "All Events".</p>
+      </div>
+      <div class="card issue">
+        <div class="t"><span class="chip chip-info">ⓘ metadata</span><h3>Metadata en el nombre</h3></div>
+        <p>El paso (<code>Onboarding 1/2/3</code>), la secuencia (<code>Loan 1 *</code>), el vendor (<code>Incode *</code>) y el origen (<code>Backend *</code>, 28 eventos) van en el nombre en lugar de propiedades.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="explorador">
+    <div class="sec-head">
+      <h2>Explorador de eventos</h2>
+      <p class="sub">Los 534 eventos con tráfico en 30 días, con su volumen por producto y las banderas de problemas detectadas.</p>
+    </div>
+    <div class="controls">
+      <input class="search" id="q" type="search" placeholder="Buscar evento… (ej. login, pin, checkout)" aria-label="Buscar evento">
+      <button class="fbtn" data-prod="presta" aria-pressed="false"><span class="dot" style="background:var(--p-presta)"></span>presta</button>
+      <button class="fbtn" data-prod="pay" aria-pressed="false"><span class="dot" style="background:var(--p-pay)"></span>pay</button>
+      <button class="fbtn" data-prod="card" aria-pressed="false"><span class="dot" style="background:var(--p-card)"></span>card</button>
+      <button class="fbtn" data-prod="vana_presta" aria-pressed="false"><span class="dot" style="background:var(--p-vpresta)"></span>vana_presta</button>
+      <button class="fbtn" data-prod="undefined" aria-pressed="false"><span class="dot" style="background:var(--p-none)"></span>sin producto</button>
+      <button class="fbtn" id="onlyflags" aria-pressed="false">solo con problemas</button>
+      <span class="count-note" id="rowcount"></span>
+    </div>
+    <div class="card tablewrap">
+      <table aria-label="Inventario de eventos">
+        <thead><tr>
+          <th>Evento</th>
+          <th class="num">Total 30d</th>
+          <th>Por producto</th>
+          <th>Banderas</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="more-note" id="morewrap" hidden><button class="morebtn" id="morebtn"></button></div>
+    </div>
+  </section>
+
+  <section id="taxonomia">
+    <div class="sec-head">
+      <h2>Hacia dónde converger</h2>
+      <p class="sub">Propuesta v0 de taxonomía canónica (estándar <em>Object + Action</em> de Segment) y el plan para llegar sin romper dashboards. Detalle completo en <span style="font-family:'IBM Plex Mono',monospace;font-size:13px">docs/event-mapping.md</span>.</p>
+    </div>
+    <div class="tax-grid">
+      <div class="card tax">
+        <h3>Reglas de la taxonomía</h3>
+        <ol>
+          <li><strong>Nombre = Objeto + Acción en pasado</strong>, inglés, Title Case: <code>Loan Application Submitted</code>, <code>Payment Completed</code>.</li>
+          <li><strong>Una sola vista:</strong> <code>Screen Viewed</code> + prop <code>screen_name</code> — elimina 177 eventos (62% del volumen) de un plumazo.</li>
+          <li><strong>Una sola interacción genérica:</strong> <code>Element Tapped</code> + prop <code>element_name</code>; los hitos de negocio conservan evento propio.</li>
+          <li><strong>Resultados estándar:</strong> <code>Started / Submitted / Completed / Failed</code> — nunca Success, Successful, Succeeded y Approved para lo mismo.</li>
+          <li><strong>Props obligatorias:</strong> <code>product</code>, <code>source</code>, <code>flow</code>, <code>step</code>, <code>provider</code> — fuera del nombre.</li>
+          <li><strong>Mensajería consolidada:</strong> <code>Message Sent/Opened/Clicked…</code> + prop <code>channel</code> (email, push, in-app, webhook).</li>
+        </ol>
+      </div>
+      <div class="card tax">
+        <h3>Plan de acción</h3>
+        <div class="phase"><div class="n">1</div><div class="d"><strong>Higiene en Lexicon (sin tocar código)</strong>Ocultar ~77 eventos muertos y el ruido del dialer; taggear por dominio/squad; verificar los ~50 eventos núcleo de KPIs.</div></div>
+        <div class="phase"><div class="n">2</div><div class="d"><strong>Corregir bugs de instrumentación</strong>El wrapper que genera Viewed Viewed; typos y casing activos.</div></div>
+        <div class="phase"><div class="n">3</div><div class="d"><strong>Tracking plan canónico</strong>Validar la taxonomía con los squads Identity, Lifecycle y Growth; documentarla evento por evento en este repo.</div></div>
+        <div class="phase"><div class="n">4</div><div class="d"><strong>Migración dual-write</strong>Emitir nombres canónicos en paralelo, alias en dashboards, deprecar variantes en 1–2 releases.</div></div>
+        <div class="phase"><div class="n">5</div><div class="d"><strong>Centralizar en Segment</strong>Cargar el plan a Protocols, bloquear eventos fuera de plan, atribuir cada source a su producto.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Metodología: Lexicon Get-Events + Insights <span style="font-family:'IBM Plex Mono',monospace">$all_events</span> desglosado por <span style="font-family:'IBM Plex Mono',monospace">$event_name</span> × <span style="font-family:'IBM Plex Mono',monospace">product_context</span>.</span>
+    <span>Repo: mariovana/user-metrics · datos crudos en <span style="font-family:'IBM Plex Mono',monospace">data/</span></span>
+  </footer>
+</div>
+
+<script id="data" type="application/json">{"products":[{"key":"presta","volume":40446453,"count":225},{"key":"undefined","volume":11998615,"count":128},{"key":"pay","volume":1199093,"count":231},{"key":"vana_presta","volume":397018,"count":7},{"key":"card","volume":18042,"count":49}],"clusters":[{"title":"Login","kind":"dup","fix":"Login Started / Completed / Failed + prop method","variants":[{"n":"Login Attempt","v":541613},{"n":"Login Button Pressed","v":260341},{"n":"Login Clicked","v":10797},{"n":"Login Attempted","v":2379},{"n":"Login Succeeded","v":2731},{"n":"Login Failed","v":1018}]},{"title":"Registro de cuenta","kind":"dup","fix":"Signup Started / Completed + prop source","variants":[{"n":"SignUp Attempt","v":399533},{"n":"Create Account Button Pressed","v":246794},{"n":"Registration Completed","v":129390},{"n":"Backend User Created","v":5092},{"n":"Registration Clicked","v":3476}]},{"title":"PIN — mayúsculas","kind":"casing","fix":"PIN Created (una sola grafía)","variants":[{"n":"PIN Created","v":185127},{"n":"Pin Created","v":986},{"n":"Viewed PIN Creation","v":231762},{"n":"Viewed Pin Creation","v":401}]},{"title":"Merge de cuentas","kind":"typo","fix":"Account Merge Started / Completed","variants":[{"n":"Merge Account Initiated","v":9444},{"n":"Merge Account Iniciated","v":4709,"hl":"Iniciated"},{"n":"Merge Account Confirmed","v":2609}]},{"title":"Help Center","kind":"dup","fix":"Screen Viewed + screen_name=help_center","variants":[{"n":"Viewed HelpCenter","v":371905},{"n":"Viewed Help Center","v":41332}]},{"title":"Inbox de notificaciones","kind":"dup","fix":"Screen Viewed + screen_name=notification_inbox","variants":[{"n":"Viewed Notification Inbox","v":718265},{"n":"Notification Inbox Viewed","v":698621},{"n":"Notification Inbox Pressed","v":464255}]},{"title":"Cuenta bancaria (pantallas)","kind":"dup","fix":"Screen Viewed + screen_name=bank_account_*","variants":[{"n":"Viewed Bank Account Details","v":420526},{"n":"Viewed Bank Account Confirmation","v":320221},{"n":"Viewed Bank Account Info","v":233630},{"n":"Viewed Bank Account Information","v":174846},{"n":"Viewed Bank Account Viewed","v":504},{"n":"Viewed Banking Info","v":26}]},{"title":"Verificación de identidad","kind":"vendor","fix":"Identity Verification * + props provider, step, result","variants":[{"n":"ID * (16 eventos)","v":866795},{"n":"Liveness * (8 eventos)","v":971160},{"n":"Incode * (8 eventos)","v":12120},{"n":"Identity Verification * (8 ev.)","v":1419},{"n":"Verification.Provider.Finished","v":735}]},{"title":"Checkout","kind":"dup","fix":"Checkout Started / Completed / Failed + prop source","variants":[{"n":"Checkout Attempted","v":8363},{"n":"Backend Checkout Completed","v":6193},{"n":"Viewed Checkout Completed","v":4517},{"n":"Checkout Successful","v":3180},{"n":"Checkout Failed","v":2045},{"n":"Checkout Under Review","v":2025}]},{"title":"Doble prefijo Viewed Viewed","kind":"bug","fix":"corregir wrapper y fusionar 23 pares","variants":[{"n":"Viewed Loan Details","v":436140},{"n":"Viewed Viewed Loan Details","v":70671},{"n":"Viewed Personal Information 1","v":292998},{"n":"Viewed Viewed Personal Information 1","v":43782},{"n":"Viewed Viewed Home Rewards","v":156615}]}],"events":[{"n":"Viewed Home","t":8464375,"p":{"presta":8464375},"f":[]},{"n":"Viewed PIN Authentication","t":3500058,"p":{"pay":6455,"presta":3491278,"undefined":2325},"f":[]},{"n":"In_app Sent","t":2019768,"p":{"undefined":2019768},"f":["estilo"]},{"n":"Email Opened","t":1198232,"p":{"undefined":1198232},"f":[]},{"n":"Viewed User Profile","t":1176357,"p":{"presta":1176357},"f":[]},{"n":"Viewed Onboarding","t":1110800,"p":{"presta":1110800},"f":[]},{"n":"Viewed Phone Input","t":1092607,"p":{"pay":10598,"presta":1082009},"f":[]},{"n":"voicemail","t":883362,"p":{"undefined":883362},"f":["ruido"]},{"n":"Viewed Rewards Home","t":860074,"p":{"presta":860074},"f":[]},{"n":"Start Loan Application Button Pressed","t":836551,"p":{"presta":836551},"f":[]},{"n":"Viewed Payment Methods Selection","t":749157,"p":{"presta":749157},"f":[]},{"n":"Viewed Phone Verification Code Input","t":747274,"p":{"pay":9329,"presta":737871,"undefined":74},"f":[]},{"n":"Viewed Notification Inbox","t":718265,"p":{"presta":718265},"f":[]},{"n":"Notification Inbox Viewed","t":698621,"p":{"presta":698621},"f":[]},{"n":"Viewed Offer","t":676086,"p":{"presta":676086},"f":[]},{"n":"not_connected","t":671271,"p":{"undefined":671271},"f":["ruido"]},{"n":"Liveness Verification Started","t":638843,"p":{"presta":638843},"f":[]},{"n":"Phone Verified","t":615599,"p":{"pay":20557,"presta":593949,"undefined":1093},"f":[]},{"n":"Viewed Phone Verification Confirmation","t":564413,"p":{"pay":5103,"presta":558292,"undefined":1018},"f":[]},{"n":"Login Attempt","t":541613,"p":{"pay":16988,"presta":524625},"f":[]},{"n":"Viewed Reference","t":506162,"p":{"pay":4081,"presta":502081},"f":[]},{"n":"Viewed Loan Breakout","t":488930,"p":{"presta":488930},"f":[]},{"n":"Push Dropped","t":488109,"p":{"undefined":488109},"f":[]},{"n":"Viewed Bank Selection","t":483506,"p":{"presta":483506},"f":[]},{"n":"Notification Inbox Pressed","t":464255,"p":{"presta":464255},"f":[]},{"n":"Loan Application Submitted","t":439129,"p":{"presta":2,"undefined":439127},"f":[]},{"n":"Viewed Loan Details","t":436140,"p":{"presta":436140},"f":[]},{"n":"Viewed Bank Account Details","t":420526,"p":{"presta":420526},"f":[]},{"n":"Loan Application Approved","t":406279,"p":{"undefined":406279},"f":[]},{"n":"Webhook Converted","t":404182,"p":{"undefined":404182},"f":[]},{"n":"SignUp Attempt","t":399533,"p":{"pay":4842,"presta":394691},"f":[]},{"n":"Viewed Offer Confirmation","t":386278,"p":{"presta":386278},"f":[]},{"n":"Viewed Loan Application Confirmation","t":384131,"p":{"presta":384131},"f":[]},{"n":"Viewed HelpCenter","t":371905,"p":{"presta":371905},"f":[]},{"n":"Loan Offer Accepted","t":365423,"p":{"presta":2,"undefined":365421},"f":[]},{"n":"Viewed Loan Uploading","t":359967,"p":{"presta":359967},"f":[]},{"n":"Viewed Bank Ticket  Details","t":359188,"p":{"presta":359188},"f":["typo"]},{"n":"Payment Created","t":346713,"p":{"undefined":346713},"f":[]},{"n":"Rewards Challenge Information","t":345044,"p":{"presta":345044},"f":[]},{"n":"Viewed ID Front Upload Instructions","t":344545,"p":{"presta":344545},"f":[]},{"n":"Push Delivered","t":335831,"p":{"undefined":335831},"f":[]},{"n":"Viewed Bank Account Confirmation","t":320221,"p":{"presta":320221},"f":[]},{"n":"ID Submitted","t":315250,"p":{"pay":2883,"vana_presta":154343,"undefined":158024},"f":[]},{"n":"Push Opened","t":310471,"p":{"undefined":310471},"f":[]},{"n":"Loan Transfer Processing","t":302535,"p":{"undefined":302535},"f":[]},{"n":"Payment Approved","t":299685,"p":{"undefined":299666,"card":19},"f":[]},{"n":"Loan Released","t":297918,"p":{"undefined":297918},"f":[]},{"n":"Viewed Personal Information 1","t":292998,"p":{"pay":4705,"presta":288293},"f":[]},{"n":"Viewed Bank Ticket Upload","t":283713,"p":{"presta":283713},"f":[]},{"n":"Contract Signature Submitted","t":278208,"p":{"pay":3423,"presta":274785},"f":[]},{"n":"Viewed Payment Chain Selection","t":267715,"p":{"presta":267715},"f":[]},{"n":"PIN Authenticated","t":265827,"p":{"pay":34719,"presta":228238,"undefined":2870},"f":[]},{"n":"Viewed Permissions Instructions","t":261528,"p":{"presta":261528},"f":[]},{"n":"Viewed Promissory Note","t":261068,"p":{"presta":261068},"f":[]},{"n":"Login Button Pressed","t":260341,"p":{"presta":260341},"f":[]},{"n":"Push Converted","t":253064,"p":{"undefined":253064},"f":[]},{"n":"Create Account Button Pressed","t":246794,"p":{"presta":246794},"f":[]},{"n":"Loan Fulfilled","t":245022,"p":{"undefined":245022},"f":[]},{"n":"Viewed Bank Account Info","t":233630,"p":{"presta":233630},"f":[]},{"n":"Viewed PIN Creation","t":231762,"p":{"pay":2903,"presta":228823,"undefined":36},"f":[]},{"n":"Viewed Wallet Onboarding","t":229100,"p":{"presta":229100},"f":[]},{"n":"Viewed Bank Image Confirmation","t":226025,"p":{"presta":226025},"f":[]},{"n":"Viewed ID Back Upload Instructions","t":225876,"p":{"presta":225876},"f":[]},{"n":"Viewed Referral Program","t":222284,"p":{"presta":222284},"f":[]},{"n":"Viewed Personal Information 3","t":219203,"p":{"presta":219203},"f":[]},{"n":"Viewed ID Document Upload","t":213407,"p":{"presta":213407},"f":[]},{"n":"Viewed Bank Payment Method Selection","t":212346,"p":{"presta":212346},"f":[]},{"n":"Viewed Account Details","t":205121,"p":{"pay":2030,"presta":203011,"undefined":80},"f":[]},{"n":"Email Bounced","t":204747,"p":{"undefined":204747},"f":[]},{"n":"Viewed Personal Information 2","t":195822,"p":{"pay":3211,"presta":192611},"f":[]},{"n":"Viewed User Personal Info","t":194098,"p":{"presta":194098},"f":[]},{"n":"Viewed Payment Methods","t":193292,"p":{"presta":193292},"f":[]},{"n":"Viewed PIN Creation Instructions","t":188190,"p":{"pay":3611,"presta":184547,"undefined":32},"f":[]},{"n":"Viewed ID Verification Intro","t":187722,"p":{"pay":4740,"presta":182982},"f":[]},{"n":"Viewed Work Information 2","t":186337,"p":{"pay":5349,"presta":180988},"f":[]},{"n":"Viewed PIN Confirmation","t":185327,"p":{"presta":185327},"f":[]},{"n":"PIN Created","t":185127,"p":{"pay":405,"presta":184722},"f":[]},{"n":"Viewed Work Information 3","t":179612,"p":{"presta":179612},"f":[]},{"n":"Viewed ID Back Image Confirmation","t":178526,"p":{"presta":178526},"f":[]},{"n":"Viewed ID Front Image Confirmation","t":177352,"p":{"presta":177352},"f":[]},{"n":"Viewed Work Information 1","t":176387,"p":{"pay":26,"presta":176361},"f":[]},{"n":"Viewed Payment Chain Information","t":175697,"p":{"presta":175697},"f":[]},{"n":"Viewed Bank Account Information","t":174846,"p":{"presta":174846},"f":[]},{"n":"ID Document Rejected","t":169353,"p":{"vana_presta":90554,"undefined":78799},"f":[]},{"n":"Retry Liveness Validation Button Pressed","t":168528,"p":{"pay":389,"presta":168139},"f":[]},{"n":"Viewed Wallet Home","t":167498,"p":{"presta":167498},"f":[]},{"n":"Viewed Viewed Home Rewards","t":156615,"p":{"presta":156615},"f":["vv"]},{"n":"ID Verified","t":145399,"p":{"pay":1371,"vana_presta":63092,"undefined":80936},"f":[]},{"n":"ID Verification Method","t":142046,"p":{"undefined":142046},"f":[]},{"n":"Risk Analysis Score","t":141603,"p":{"undefined":141603},"f":[]},{"n":"Viewed Coupons","t":139677,"p":{"presta":139677},"f":[]},{"n":"Liveness Verification Created","t":139592,"p":{"vana_presta":7,"undefined":139585},"f":[]},{"n":"Close Loan Application Button Pressed","t":133967,"p":{"presta":133967},"f":[]},{"n":"Liveness Verification Success","t":132641,"p":{"pay":2273,"vana_presta":3597,"presta":17179,"undefined":109592},"f":[]},{"n":"Registration Completed","t":129390,"p":{"pay":2144,"presta":127172,"undefined":74},"f":[]},{"n":"Loan 1 Application Approved","t":128825,"p":{"undefined":128825},"f":[]},{"n":"Viewed Bank Account Update","t":127516,"p":{"presta":127516},"f":[]},{"n":"Phone Already Registered","t":125736,"p":{"pay":97,"presta":125639},"f":[]},{"n":"Log In Instead Button Pressed","t":116690,"p":{"pay":1181,"presta":115509},"f":[]},{"n":"Loan Tracking Updated","t":116464,"p":{"pay":116464},"f":[]},{"n":"Resend Phone Verification Button Pressed","t":115692,"p":{"pay":1731,"presta":113955,"undefined":6},"f":[]},{"n":"Viewed Payment Reference Creation","t":112252,"p":{"presta":112252},"f":[]},{"n":"In_app Opened","t":111552,"p":{"undefined":111552},"f":["estilo"]},{"n":"Backend Payment Rejected","t":99641,"p":{"pay":99641},"f":["backend"]},{"n":"Viewed Phone Update Email Input","t":99443,"p":{"pay":600,"presta":98829,"undefined":14},"f":[]},{"n":"Webhook Failed","t":95787,"p":{"undefined":95787},"f":[]},{"n":"Viewed Payment Reference Confirmation","t":93880,"p":{"presta":93880},"f":[]},{"n":"Close Liveness Validation Button Pressed","t":87287,"p":{"pay":209,"presta":87078},"f":[]},{"n":"Viewed Reset PIN Requirements","t":86116,"p":{"pay":3127,"presta":82939,"undefined":50},"f":[]},{"n":"Viewed Temporary PIN Authentication","t":85254,"p":{"pay":1494,"presta":83721,"undefined":39},"f":[]},{"n":"Viewed Loan Agreement","t":84966,"p":{"presta":84966},"f":[]},{"n":"Document Verification Created","t":84707,"p":{"vana_presta":84706,"undefined":1},"f":[]},{"n":"Loan Offer Expired","t":83713,"p":{"undefined":83713},"f":[]},{"n":"Viewed Vana Pay Home","t":82691,"p":{"pay":82691},"f":[]},{"n":"connected","t":82661,"p":{"undefined":82661},"f":["ruido"]},{"n":"Push Bounced","t":81462,"p":{"undefined":81462},"f":[]},{"n":"Viewed Enter Current PIN","t":80243,"p":{"presta":80243},"f":[]},{"n":"Viewed Promo and Referral Code Entry","t":79113,"p":{"presta":79113},"f":[]},{"n":"Loan Application Rejected","t":78441,"p":{"undefined":78441},"f":[]},{"n":"ID Verification Failed","t":77943,"p":{"pay":139,"undefined":77804},"f":[]},{"n":"Bank Account Update Attempt","t":73492,"p":{"presta":73492},"f":[]},{"n":"Viewed Viewed Loan Details","t":70671,"p":{"presta":70671},"f":["vv"]},{"n":"Viewed Viewed Loan Application Confirmation","t":69582,"p":{"presta":69582},"f":["vv"]},{"n":"Viewed Bureau Consent Clause Confirmation","t":65113,"p":{"presta":65113},"f":[]},{"n":"Viewed Viewed Offer Confirmation","t":65071,"p":{"presta":65071},"f":["vv"]},{"n":"Logged Out","t":65030,"p":{"pay":291,"presta":64739},"f":[]},{"n":"SignUp Instead Button Pressed","t":62327,"p":{"pay":901,"presta":61426},"f":[]},{"n":"Viewed Wallet Category","t":61938,"p":{"presta":61938},"f":[]},{"n":"created payment promise","t":61063,"p":{"undefined":61063},"f":["estilo"]},{"n":"Liveness Verification Failed","t":59698,"p":{"pay":125,"vana_presta":719,"presta":25967,"undefined":32887},"f":[]},{"n":"Payment Cancelled","t":56764,"p":{"undefined":56764},"f":[]},{"n":"Loan 1 Released","t":56433,"p":{"undefined":56433},"f":[]},{"n":"Logout Button Pressed","t":56099,"p":{"pay":2016,"presta":53851,"undefined":232},"f":[]},{"n":"User Challenge Progress Start","t":53314,"p":{"undefined":53314},"f":[]},{"n":"PIN Incorrect","t":52550,"p":{"pay":4964,"presta":47332,"undefined":254},"f":[]},{"n":"Viewed More Information Onboarding","t":52413,"p":{"presta":52413},"f":[]},{"n":"Loan 1 Application Rejected","t":51121,"p":{"undefined":51121},"f":[]},{"n":"Viewed PIN Reset Success","t":49563,"p":{"pay":1024,"presta":48509,"undefined":30},"f":[]},{"n":"Push Drafted","t":47810,"p":{"undefined":47810},"f":[]},{"n":"Disbursal Information Submitted","t":47704,"p":{"presta":47704},"f":[]},{"n":"Viewed Payment Reference","t":46261,"p":{"presta":46261},"f":[]},{"n":"Rewards Challenge Completed","t":44963,"p":{"undefined":44963},"f":[]},{"n":"Viewed Viewed Personal Information 1","t":43782,"p":{"presta":43190,"card":592},"f":["vv"]},{"n":"expired payment promise","t":43670,"p":{"undefined":43670},"f":["estilo"]},{"n":"Payment Submitted","t":43087,"p":{"pay":2485,"presta":40602},"f":[]},{"n":"Viewed Vana Pay Landing","t":42625,"p":{"pay":42625},"f":[]},{"n":"Viewed Help Center","t":41332,"p":{"pay":151,"presta":41181},"f":[]},{"n":"JS Error","t":40920,"p":{"pay":40891,"undefined":29},"f":[]},{"n":"NPS Sent","t":40760,"p":{"undefined":40760},"f":[]},{"n":"Viewed Wallet Transactions","t":40723,"p":{"presta":40723},"f":[]},{"n":"Viewed Reset Email OTP Auth","t":39828,"p":{"presta":39828},"f":[]},{"n":"Viewed Password and Security","t":39007,"p":{"presta":39007},"f":[]},{"n":"Wallet Cash-In","t":38839,"p":{"undefined":38839},"f":[]},{"n":"Loan 1 Fulfilled","t":38419,"p":{"undefined":38419},"f":[]},{"n":"Reference Contact Added","t":38256,"p":{"pay":2111,"presta":35978,"card":167},"f":[]},{"n":"PIN Submit","t":36944,"p":{"pay":36944},"f":[]},{"n":"PIN Reset","t":35562,"p":{"pay":2950,"presta":32552,"undefined":60},"f":[]},{"n":"Backend User Balance Updated","t":35303,"p":{"pay":35303},"f":["backend"]},{"n":"Viewed Viewed Personal Information 3","t":33497,"p":{"presta":32979,"card":518},"f":["vv"]},{"n":"Viewed Viewed Wallet Category","t":33388,"p":{"presta":33388},"f":["vv"]},{"n":"Viewed Viewed Personal Information 2","t":33339,"p":{"presta":32839,"card":500},"f":["vv"]},{"n":"Email Clicked","t":33083,"p":{"undefined":33083},"f":[]},{"n":"Viewed Disbursal Methods","t":32544,"p":{"presta":32544},"f":[]},{"n":"Viewed Viewed Work Information 1","t":31549,"p":{"presta":31027,"card":522},"f":["vv"]},{"n":"Viewed Viewed Work Information 2","t":31097,"p":{"presta":30568,"card":529},"f":["vv"]},{"n":"Viewed Viewed Work Information 3","t":31078,"p":{"presta":30566,"card":512},"f":["vv"]},{"n":"Viewed ID Selfie Upload Instructions","t":30912,"p":{"presta":30912},"f":[]},{"n":"Viewed Email Update","t":29168,"p":{"presta":29168},"f":[]},{"n":"Email Failed","t":29085,"p":{"undefined":29085},"f":[]},{"n":"Viewed Viewed Wallet Home","t":28964,"p":{"presta":28964},"f":["vv"]},{"n":"Disbursal Information Confirmed","t":28907,"p":{"presta":28907},"f":[]},{"n":"Wallet Disbursal Updated","t":28854,"p":{"undefined":28854},"f":[]},{"n":"Retake ID Image Button Pressed","t":28389,"p":{"pay":583,"presta":27806},"f":[]},{"n":"Rewards Challenge Claimed","t":27456,"p":{"undefined":27456},"f":[]},{"n":"Viewed Viewed Reference","t":26009,"p":{"presta":26009},"f":["vv"]},{"n":"Viewed Rewards Challenge Completed Screen","t":25992,"p":{"presta":25992},"f":[]},{"n":"Email Converted","t":25030,"p":{"undefined":25030},"f":[]},{"n":"Erase Signature Button Tapped","t":24693,"p":{"presta":24693},"f":[]},{"n":"Viewed Tu negocio","t":24684,"p":{"pay":24684},"f":["es"]},{"n":"Viewed ID Selfie Image Confirmation","t":24395,"p":{"presta":24395},"f":[]},{"n":"Viewed Phone Update Info","t":24317,"p":{"presta":24317},"f":[]},{"n":"In_app Clicked","t":23406,"p":{"undefined":23406},"f":["estilo"]},{"n":"Recover PIN Button Pressed","t":22834,"p":{"pay":1969,"presta":20801,"undefined":64},"f":[]},{"n":"Promo Code Applied","t":22134,"p":{"undefined":22134},"f":[]},{"n":"Paste Button Pressed","t":21727,"p":{"presta":21727},"f":[]},{"n":"In_app Failed","t":21605,"p":{"undefined":21605},"f":["estilo"]},{"n":"Loan Eligibility Rejected","t":20785,"p":{"pay":20785},"f":[]},{"n":"Edit Disbursal Information Button Pressed","t":20177,"p":{"presta":20177},"f":[]},{"n":"Viewed Wallet Store","t":19861,"p":{"presta":19861},"f":[]},{"n":"Viewed Phone Update Email PIN Verification","t":19603,"p":{"pay":88,"presta":19511,"undefined":4},"f":[]},{"n":"Viewed Wallet Giftcards","t":16529,"p":{"presta":16529},"f":[]},{"n":"Merchant Card Clicked","t":16505,"p":{"pay":16505},"f":[]},{"n":"API Error Received","t":16281,"p":{"pay":12078,"undefined":4203},"f":[]},{"n":"Viewed Yape Information","t":15879,"p":{"presta":15879},"f":[]},{"n":"Viewed Checkout","t":15522,"p":{"pay":15522},"f":[]},{"n":"Viewed Merge Account Intro","t":15464,"p":{"presta":15464},"f":[]},{"n":"Push Attempted","t":14937,"p":{"undefined":14937},"f":[]},{"n":"Viewed VRM Viewed","t":14842,"p":{"pay":14842},"f":["vv"]},{"n":"Promo Code Granted","t":14688,"p":{"undefined":14688},"f":[]},{"n":"Edit Loan Application Button Pressed","t":13874,"p":{"presta":13874},"f":[]},{"n":"Merge Account Alert Pressed","t":13620,"p":{"presta":13620},"f":[]},{"n":"Viewed Phone Update Number Input","t":13531,"p":{"pay":75,"presta":13452,"undefined":4},"f":[]},{"n":"Viewed Historial","t":12998,"p":{"pay":12998},"f":["es"]},{"n":"Phone Verification Attempt","t":12703,"p":{"pay":12703},"f":[]},{"n":"Loan Application Confirmation Error","t":12497,"p":{"presta":12497},"f":[]},{"n":"Payment Expired","t":12461,"p":{"undefined":12461},"f":[]},{"n":"Payment Plan Selected","t":12414,"p":{"pay":12414},"f":[]},{"n":"Close Application Button Pressed","t":12055,"p":{"presta":12055},"f":[]},{"n":"Viewed Wallet Subcategory","t":12007,"p":{"presta":12007},"f":[]},{"n":"Email Dropped","t":11980,"p":{"undefined":11980},"f":[]},{"n":"Promotion Displayed","t":11941,"p":{"pay":11941},"f":[]},{"n":"Viewed Pay with Vana Cash","t":11759,"p":{"presta":11759},"f":[]},{"n":"Backend Payment Approved","t":11673,"p":{"pay":11673},"f":["backend"]},{"n":"Personal Form Submitted Failed","t":11614,"p":{"pay":11614},"f":[]},{"n":"Viewed digital signature authorization","t":11558,"p":{"presta":11558},"f":[]},{"n":"Backend Loan Installment Payment Reminder","t":11156,"p":{"pay":11156},"f":["backend"]},{"n":"Viewed Delete Account","t":11110,"p":{"pay":271,"presta":10839},"f":[]},{"n":"Viewed Viewed Bureau Consent Clause Confirmation","t":10842,"p":{"presta":10842},"f":["vv"]},{"n":"Login Clicked","t":10797,"p":{"pay":9782,"card":1015},"f":[]},{"n":"Viewed Credit Pre-approval Loading","t":10558,"p":{"pay":10558},"f":[]},{"n":"Viewed Wallet Purchase Review","t":10496,"p":{"presta":10496},"f":[]},{"n":"fulfilled payment promise","t":10232,"p":{"undefined":10232},"f":["estilo"]},{"n":"Payment calculator amount entered","t":10193,"p":{"pay":10193},"f":[]},{"n":"Viewed Address Confirmation","t":9869,"p":{"presta":9869},"f":[]},{"n":"Backend Loan Payment Distribution Applied","t":9452,"p":{"pay":9452},"f":["backend"]},{"n":"Merge Account Initiated","t":9444,"p":{"undefined":9444},"f":[]},{"n":"Contract Terms Confirmed","t":9086,"p":{"pay":9086},"f":[]},{"n":"Viewed Vana Pay Plans Selection","t":8959,"p":{"pay":8959},"f":[]},{"n":"Viewed Orders In Progress Displayed","t":8921,"p":{"pay":8921},"f":["vv"]},{"n":"Viewed VRM Earnings Viewed","t":8873,"p":{"pay":8873},"f":["vv"]},{"n":"Order Creation Attempted","t":8441,"p":{"pay":8441},"f":[]},{"n":"Payment Method Selected","t":8435,"p":{"pay":8304,"card":131},"f":[]},{"n":"Viewed Viewed Rewards Challenge Information","t":8413,"p":{"presta":8413},"f":["vv"]},{"n":"Checkout Attempted","t":8363,"p":{"pay":8363},"f":[]},{"n":"Viewed Select Receipt Type","t":8139,"p":{"presta":8139},"f":[]},{"n":"Payment calculator plan selected","t":8105,"p":{"pay":8105},"f":[]},{"n":"Order Created","t":8048,"p":{"pay":8048},"f":[]},{"n":"Viewed Orden generada","t":7968,"p":{"pay":7968},"f":["es"]},{"n":"Merchant Searched","t":7954,"p":{"pay":7954},"f":[]},{"n":"Referral Home Video","t":7873,"p":{"presta":7873},"f":[]},{"n":"Account Deleted","t":7712,"p":{"undefined":7712},"f":[]},{"n":"Viewed Address Receipt","t":7575,"p":{"presta":7575},"f":[]},{"n":"Viewed Instant Transfer","t":7408,"p":{"presta":7408},"f":[]},{"n":"Loan Transfer Failed","t":7370,"p":{"undefined":7370},"f":[]},{"n":"Reference Error","t":6781,"p":{"presta":6781},"f":[]},{"n":"Close Personal Info Button Pressed","t":6472,"p":{"pay":6472},"f":[]},{"n":"Origination Evaluated","t":6469,"p":{"pay":6469},"f":[]},{"n":"Referral Reward Transfer Confirmed","t":6411,"p":{"undefined":6411},"f":[]},{"n":"Backend Checkout Completed","t":6193,"p":{"pay":6193},"f":["backend"]},{"n":"Backend Initial Risk Segment Assigned","t":6095,"p":{"pay":6095},"f":["backend"]},{"n":"Viewed VRM Loaded","t":6068,"p":{"pay":6068},"f":[]},{"n":"Viewed Phone Update Verification Code Input","t":5981,"p":{"pay":33,"presta":5946,"undefined":2},"f":[]},{"n":"Loan Application Closed","t":5856,"p":{"presta":5856},"f":[]},{"n":"Payment calculator opened","t":5565,"p":{"pay":5565},"f":[]},{"n":"Selected Receipt Type","t":5483,"p":{"presta":5483},"f":[]},{"n":"Go to Vana Pay Button Pressed","t":5419,"p":{"presta":5419},"f":[]},{"n":"Payment Rejected","t":5370,"p":{"undefined":5370},"f":[]},{"n":"Rewards Tooltips","t":5361,"p":{"presta":5361},"f":[]},{"n":"Wallet Information","t":5345,"p":{"presta":5345},"f":[]},{"n":"Viewed Pay with Vana Cash Confirmation","t":5303,"p":{"presta":5303},"f":[]},{"n":"Image Upload Option","t":5176,"p":{"presta":5176},"f":[]},{"n":"Payment calculator calculated","t":5138,"p":{"pay":5138},"f":[]},{"n":"Address Receipt Submitted","t":5118,"p":{"undefined":5118},"f":[]},{"n":"Viewed Cash Pickup","t":5106,"p":{"presta":5106},"f":[]},{"n":"Backend User Created","t":5092,"p":{"pay":5092},"f":["backend"]},{"n":"Vana Pay Onboarding Completed","t":5046,"p":{"pay":5046},"f":[]},{"n":"Payment calculator closed","t":4983,"p":{"pay":4983},"f":[]},{"n":"Backend Loan Fulfilled","t":4854,"p":{"pay":4854},"f":["backend"]},{"n":"In_app Converted","t":4835,"p":{"undefined":4835},"f":["estilo"]},{"n":"Home Filter Selected","t":4734,"p":{"pay":4734},"f":[]},{"n":"Credit Balance More Info Clicked","t":4732,"p":{"pay":4732},"f":[]},{"n":"Merge Account Iniciated","t":4709,"p":{"presta":4709},"f":["typo"]},{"n":"Viewed Credit Aplication Confirmation","t":4604,"p":{"pay":4604},"f":["typo"]},{"n":"Viewed Checkout Completed","t":4517,"p":{"pay":4517},"f":[]},{"n":"Close Liveness Verification Button Pressed","t":4496,"p":{"presta":4496},"f":[]},{"n":"Payment Retry Attempted","t":4386,"p":{"pay":4386},"f":[]},{"n":"Viewed Terms Of Service","t":4325,"p":{"presta":4325},"f":[]},{"n":"Checkout Receipt Downloaded","t":4115,"p":{"pay":4115},"f":[]},{"n":"Invalid Credit Card Entered","t":4089,"p":{"pay":4089},"f":[]},{"n":"Incode Module Started","t":4081,"p":{"presta":4081},"f":["vendor"]},{"n":"Viewed PIN Update Instructions","t":4069,"p":{"presta":4069},"f":[]},{"n":"Wallet Roll-back","t":4055,"p":{"undefined":4055},"f":[]},{"n":"Referral Promo Applied","t":3975,"p":{"undefined":3975},"f":[]},{"n":"Personal Income Submitted Success","t":3929,"p":{"pay":3929},"f":[]},{"n":"Backend Initial Credit Line Assigned","t":3916,"p":{"pay":3916},"f":["backend"]},{"n":"Card Balance Loaded","t":3900,"p":{"card":3900},"f":[]},{"n":"Viewed","t":3887,"p":{"undefined":3887},"f":["ruido"]},{"n":"Wallet Purchase Completed","t":3871,"p":{"undefined":3871},"f":[]},{"n":"Credit Card Changed","t":3678,"p":{"pay":3678},"f":[]},{"n":"ID Number Error","t":3669,"p":{"presta":3658,"card":11},"f":[]},{"n":"Digital Signature Authorization","t":3659,"p":{"pay":3659},"f":[]},{"n":"Registration Clicked","t":3476,"p":{"pay":3306,"card":170},"f":[]},{"n":"Contract Signature Started","t":3423,"p":{"pay":3423},"f":[]},{"n":"Bank Ticket Upload","t":3305,"p":{"pay":3305},"f":[]},{"n":"Backend Payment Session Created","t":3301,"p":{"pay":3301},"f":["backend"]},{"n":"Viewed ID Document On Cooldown","t":3286,"p":{"presta":3286},"f":[]},{"n":"User Phone Update Initiated","t":3239,"p":{"undefined":3239},"f":[]},{"n":"Address Verification Failed","t":3221,"p":{"undefined":3221},"f":[]},{"n":"Download Receipt Clicked","t":3180,"p":{"pay":3180},"f":[]},{"n":"Checkout Successful","t":3180,"p":{"pay":3180},"f":[]},{"n":"Personal Form Submitted Success","t":3123,"p":{"pay":3123},"f":[]},{"n":"Bank Ticket Upload Started","t":3112,"p":{"pay":3112},"f":[]},{"n":"Incode Module Completed","t":3069,"p":{"presta":3069},"f":["vendor"]},{"n":"Viewed Address Verification Intro","t":2994,"p":{"presta":2994},"f":[]},{"n":"Viewed Liveness Verification Started","t":2982,"p":{"pay":2982},"f":[]},{"n":"ID Front Upload Instructions","t":2966,"p":{"pay":2966},"f":[]},{"n":"Authentication Error","t":2886,"p":{"pay":2848,"presta":38},"f":[]},{"n":"Viewed Phone Update Success","t":2760,"p":{"pay":22,"presta":2736,"undefined":2},"f":[]},{"n":"Confirm Delete Account Button Pressed","t":2746,"p":{"pay":178,"presta":2568},"f":[]},{"n":"Login Succeeded","t":2731,"p":{"pay":2731},"f":[]},{"n":"Viewed Pay Personal Info","t":2720,"p":{"pay":2720},"f":[]},{"n":"Delete Account Request Successful","t":2713,"p":{"presta":2713},"f":[]},{"n":"Order Link Copy Clicked","t":2706,"p":{"pay":2706},"f":[]},{"n":"Order Details Displayed","t":2680,"p":{"pay":2680},"f":[]},{"n":"Order Details Clicked","t":2680,"p":{"pay":2680},"f":[]},{"n":"Viewed Detalle de orden","t":2678,"p":{"pay":2678},"f":["es"]},{"n":"Referral Statistics","t":2678,"p":{"presta":2678},"f":[]},{"n":"Viewed Checkout Failed","t":2629,"p":{"pay":2629},"f":[]},{"n":"Merge Account Confirmed","t":2609,"p":{"presta":749,"undefined":1860},"f":[]},{"n":"Bank Ticket Confirmation","t":2562,"p":{"pay":2562},"f":[]},{"n":"Viewed User Segmentation Loader","t":2548,"p":{"pay":2548},"f":[]},{"n":"Payment Started","t":2546,"p":{"pay":2124,"card":422},"f":[]},{"n":"Rewards Expectancy Disbursement Button Pressed","t":2459,"p":{"presta":2459},"f":[]},{"n":"Selfie Upload Attempt","t":2446,"p":{"pay":2446},"f":[]},{"n":"Viewed Merchant Login","t":2446,"p":{"pay":2446},"f":[]},{"n":"Viewed Primary Offer Displayed","t":2398,"p":{"pay":2398},"f":["vv"]},{"n":"Login Attempted","t":2379,"p":{"pay":2379},"f":[]},{"n":"ID Verification Completed","t":2339,"p":{"presta":2339},"f":[]},{"n":"Backend Payment Intent Approved","t":2330,"p":{"pay":2330},"f":["backend"]},{"n":"Backend Loan Late Fee Created","t":2321,"p":{"pay":2321},"f":["backend"]},{"n":"Viewed Address Receipt Upload Instructions","t":2294,"p":{"presta":2294},"f":[]},{"n":"Incode Camera Retry","t":2267,"p":{"presta":2267},"f":["vendor"]},{"n":"NPS Survey Submitted","t":2255,"p":{"undefined":2255},"f":[]},{"n":"Viewed Address Receipt Image Confirmation","t":2220,"p":{"presta":2220},"f":[]},{"n":"Late Payment See Details Clicked","t":2206,"p":{"pay":2206},"f":[]},{"n":"Viewed Checkout Thank You","t":2148,"p":{"pay":2148},"f":[]},{"n":"Viewed Viewed Rewards Challenge Completed Screen","t":2134,"p":{"presta":2134},"f":["vv"]},{"n":"Payment Session Review Requested","t":2132,"p":{"pay":2132},"f":[]},{"n":"Viewed Privacy Policy","t":2117,"p":{"presta":2117},"f":[]},{"n":"Checkout Failed","t":2045,"p":{"pay":2045},"f":[]},{"n":"Add Credit Card Clicked","t":2028,"p":{"pay":2028},"f":[]},{"n":"Checkout Under Review","t":2025,"p":{"pay":2025},"f":[]},{"n":"Auth Error Received","t":1956,"p":{"pay":1937,"undefined":19},"f":[]},{"n":"Backend User Profile Completed","t":1939,"p":{"pay":1939},"f":["backend"]},{"n":"Address Verified","t":1882,"p":{"undefined":1882},"f":[]},{"n":"VRM Cashout Initiated","t":1835,"p":{"pay":1835},"f":[]},{"n":"ID Front Image Confirmation","t":1788,"p":{"pay":1788},"f":[]},{"n":"Incode Flow Ready","t":1779,"p":{"presta":1779},"f":["vendor"]},{"n":"Viewed Viewed Wallet Information","t":1701,"p":{"presta":1701},"f":["vv"]},{"n":"Viewed Cash Pickup More Information","t":1683,"p":{"presta":1683},"f":[]},{"n":"Viewed Viewed Transactions History","t":1668,"p":{"card":1668},"f":["vv"]},{"n":"Wallet Onboarding","t":1580,"p":{"undefined":1580},"f":[]},{"n":"ID Back Upload Instructions","t":1565,"p":{"pay":1565},"f":[]},{"n":"ID Back Image Confirmation","t":1519,"p":{"pay":1519},"f":[]},{"n":"Delete Credit Card Clicked","t":1494,"p":{"pay":1494},"f":[]},{"n":"VRM Cashout Processing Started","t":1480,"p":{"pay":1480},"f":[]},{"n":"Viewed ID Verification Requested","t":1462,"p":{"pay":1462},"f":[]},{"n":"Backend Credit Line Increased","t":1432,"p":{"pay":1432},"f":["backend"]},{"n":"Backend User ID Verification Requested","t":1407,"p":{"pay":1407},"f":["backend"]},{"n":"Viewed ID Verification Upload","t":1386,"p":{"pay":1386},"f":[]},{"n":"User Phone Update Confirmed","t":1241,"p":{"undefined":1241},"f":[]},{"n":"Select Credit Card Clicked","t":1225,"p":{"pay":1225},"f":[]},{"n":"Payment calculator recalculated","t":1082,"p":{"pay":1082},"f":[]},{"n":"Start Card Application Button Pressed","t":1067,"p":{"card":1067},"f":[]},{"n":"Login Failed","t":1018,"p":{"pay":1018},"f":[]},{"n":"Delete Account Request Unsuccessful","t":1002,"p":{"presta":1002},"f":[]},{"n":"Pin Created","t":986,"p":{"pay":910,"undefined":76},"f":["casing"]},{"n":"Credit Card Added","t":957,"p":{"pay":957},"f":[]},{"n":"Viewed Formulario agregar vendedor","t":919,"p":{"pay":919},"f":["es"]},{"n":"ID Selfie Upload Instructions","t":880,"p":{"pay":880},"f":[]},{"n":"Delete Credit Card Failed","t":861,"p":{"pay":861},"f":[]},{"n":"Viewed Personal Info Viewed","t":849,"p":{"pay":849},"f":["vv"]},{"n":"Bank Selected","t":826,"p":{"pay":826},"f":[]},{"n":"ID Selfie Image Confirmation","t":817,"p":{"pay":817},"f":[]},{"n":"Add Credit Card Failed","t":814,"p":{"pay":814},"f":[]},{"n":"New Payment Plan Offered","t":804,"p":{"pay":804},"f":[]},{"n":"Document Already Registered","t":789,"p":{"pay":789},"f":[]},{"n":"Continue in the app","t":778,"p":{"presta":778},"f":[]},{"n":"Add seller submitted","t":749,"p":{"pay":749},"f":[]},{"n":"Verification.Provider.Finished","t":735,"p":{"undefined":735},"f":["estilo","vendor"]},{"n":"View Cash Pickup Locations Button Pressed","t":734,"p":{"presta":734},"f":[]},{"n":"Incode Flow Completed","t":733,"p":{"presta":733},"f":["vendor"]},{"n":"Bot Payment Details Required","t":687,"p":{"undefined":687},"f":[]},{"n":"Do it Later Button Pressed","t":672,"p":{"presta":672},"f":[]},{"n":"Backend Credit Line Decreased","t":670,"p":{"pay":670},"f":["backend"]},{"n":"Identity Verification Capture Error","t":664,"p":{"card":664},"f":[]},{"n":"Delete My Account Box Checked","t":642,"p":{"pay":642},"f":[]},{"n":"Retake Address Receipt Image Button Pressed","t":636,"p":{"presta":636},"f":[]},{"n":"Viewed Pin Confirmation","t":621,"p":{"pay":621},"f":["casing"]},{"n":"View Service Receipt Number Instructions Button Pressed","t":589,"p":{"presta":589},"f":[]},{"n":"Credit Card Deleted","t":581,"p":{"pay":581},"f":[]},{"n":"Viewed Vana Card Landing","t":572,"p":{"card":572},"f":[]},{"n":"Viewed Bank Account Viewed","t":504,"p":{"pay":504},"f":["vv"]},{"n":"Card Details Opened","t":499,"p":{"card":499},"f":[]},{"n":"Account Type Selected","t":494,"p":{"pay":494},"f":[]},{"n":"ID Verification Dismissed","t":481,"p":{"presta":481},"f":[]},{"n":"Viewed Viewed References","t":475,"p":{"card":475},"f":["vv"]},{"n":"Viewed Viewed Card Request Confirmation","t":469,"p":{"card":469},"f":["vv"]},{"n":"Logout Attempted","t":467,"p":{"pay":467},"f":[]},{"n":"Personal Info Submitted","t":461,"p":{"pay":461},"f":[]},{"n":"Backend Credit Line Not Assigned","t":455,"p":{"pay":455},"f":["backend"]},{"n":"Payment Plan Modified","t":450,"p":{"pay":450},"f":[]},{"n":"Card Application Submitted","t":448,"p":{"card":448},"f":[]},{"n":"Logout Succeeded","t":439,"p":{"pay":439},"f":[]},{"n":"Viewed Viewed Card Statement","t":424,"p":{"card":424},"f":["vv"]},{"n":"ID Front Capture Completed","t":412,"p":{"undefined":412},"f":[]},{"n":"Viewed Pin Creation","t":401,"p":{"pay":325,"undefined":76},"f":["casing"]},{"n":"Document ID Error","t":399,"p":{"pay":399},"f":[]},{"n":"Email Already In Use","t":396,"p":{"presta":396},"f":[]},{"n":"Order Creation Failed","t":380,"p":{"pay":380},"f":[]},{"n":"Active Credit When Deleting Account","t":376,"p":{"pay":89,"presta":287},"f":[]},{"n":"Viewed Onboarding 1","t":374,"p":{"presta":374},"f":[]},{"n":"ID Back Capture Completed","t":368,"p":{"undefined":368},"f":[]},{"n":"Delivery Intake Received","t":361,"p":{"undefined":361},"f":[]},{"n":"Viewed Review Viewed","t":356,"p":{"pay":356},"f":["vv"]},{"n":"Backend Payment Session Updated","t":354,"p":{"pay":354},"f":["backend"]},{"n":"Bank Account Submitted","t":346,"p":{"pay":346},"f":[]},{"n":"Change Payment Method Clicked","t":345,"p":{"pay":345},"f":[]},{"n":"Delivery Assigned","t":344,"p":{"undefined":344},"f":[]},{"n":"Card Activation Requested","t":340,"p":{"card":340},"f":[]},{"n":"Change Phone Clicked","t":332,"p":{"pay":332},"f":[]},{"n":"Delete Account Button Pressed","t":329,"p":{"pay":329},"f":[]},{"n":"Viewed Formulario editar vendedor","t":318,"p":{"pay":318},"f":["es"]},{"n":"Loan Release Delayed","t":290,"p":{"undefined":290},"f":[]},{"n":"Delivery Started","t":287,"p":{"undefined":287},"f":[]},{"n":"Delivery Confirmed","t":282,"p":{"undefined":282},"f":[]},{"n":"Invalid Expiration Date Entered","t":277,"p":{"pay":277},"f":[]},{"n":"Backend Manual Payment Approved","t":276,"p":{"pay":276},"f":["backend"]},{"n":"Backend Payment Velocity Rule Exceeded","t":274,"p":{"pay":274},"f":["backend"]},{"n":"Viewed Identity Verification Intro","t":249,"p":{"card":249},"f":[]},{"n":"Viewed Card Activation Started","t":246,"p":{"card":246},"f":[]},{"n":"Liveness Capture Completed","t":243,"p":{"undefined":243},"f":[]},{"n":"Backend Risk Segment Downgraded","t":242,"p":{"pay":242},"f":["backend"]},{"n":"Identity Verification Started","t":242,"p":{"card":242},"f":[]},{"n":"Backend Risk Segment Upgraded","t":239,"p":{"pay":239},"f":["backend"]},{"n":"Identity Verification Module Started","t":236,"p":{"card":236},"f":[]},{"n":"Card Activation Submitted","t":218,"p":{"card":218},"f":[]},{"n":"Backend Payment Intent Rejected","t":214,"p":{"pay":214},"f":["backend"]},{"n":"Card Activation Completed","t":213,"p":{"card":213},"f":[]},{"n":"Delivery Completed","t":208,"p":{"undefined":208},"f":[]},{"n":"Identity Verification Flow Ready","t":205,"p":{"card":205},"f":[]},{"n":"Backend Payment Session Express Onboarding Rejected","t":201,"p":{"pay":201},"f":["backend"]},{"n":"Contract Terms Clicked","t":197,"p":{"pay":197},"f":[]},{"n":"Order Link Share Clicked","t":176,"p":{"pay":176},"f":[]},{"n":"Refund Benefit Explained","t":176,"p":{"undefined":176},"f":[]},{"n":"Training Completed","t":173,"p":{"undefined":173},"f":[]},{"n":"Incentive Information Link Clicked","t":171,"p":{"pay":171},"f":[]},{"n":"Incode Flow Aborted","t":161,"p":{"presta":161},"f":["vendor"]},{"n":"Payment Session Rejected","t":146,"p":{"pay":146},"f":[]},{"n":"Viewed Instant Transfer Instructions","t":138,"p":{"presta":138},"f":[]},{"n":"Card Details Closed","t":138,"p":{"card":138},"f":[]},{"n":"Viewed VRM Wallet Information","t":135,"p":{"pay":135},"f":[]},{"n":"Payment Amount Confirmed","t":128,"p":{"card":128},"f":[]},{"n":"Card Lock Requested","t":127,"p":{"card":127},"f":[]},{"n":"Backend Manual Installments Modified","t":113,"p":{"pay":113},"f":["backend"]},{"n":"View Terms Button Pressed","t":111,"p":{"presta":111},"f":[]},{"n":"Push Failed","t":110,"p":{"undefined":110},"f":[]},{"n":"Document Rejected","t":108,"p":{"pay":108},"f":[]},{"n":"Delivery Rescheduled","t":100,"p":{"undefined":100},"f":[]},{"n":"View Privacy Policy Button Pressed","t":90,"p":{"presta":90},"f":[]},{"n":"Card Unlock Requested","t":86,"p":{"card":86},"f":[]},{"n":"Delivery Failed","t":74,"p":{"undefined":74},"f":[]},{"n":"Bank Info Error","t":73,"p":{"pay":73},"f":[]},{"n":"Liveness Fallback Continued","t":62,"p":{"pay":62},"f":[]},{"n":"Delete My Account Box Unchecked","t":62,"p":{"pay":62},"f":[]},{"n":"View Service Receipt Number Button Pressed","t":60,"p":{"pay":60},"f":[]},{"n":"Liveness Fallback Resolved","t":56,"p":{"pay":56},"f":[]},{"n":"Viewed Credit Pre-approval Rejected","t":56,"p":{"pay":56},"f":[]},{"n":"Review Section Expanded","t":55,"p":{"pay":55},"f":[]},{"n":"Delivery Reassigned","t":51,"p":{"undefined":51},"f":[]},{"n":"Backend Loan Reversed","t":48,"p":{"pay":48},"f":["backend"]},{"n":"Viewed Pay with Vana Cash Details","t":48,"p":{"presta":48},"f":[]},{"n":"Payment Intent Created","t":46,"p":{"card":46},"f":[]},{"n":"Send Bank Ticket Clicked","t":45,"p":{"card":45},"f":[]},{"n":"Personal Info Error","t":44,"p":{"pay":44},"f":[]},{"n":"Email Spammed","t":44,"p":{"undefined":44},"f":[]},{"n":"Credit Card Changed Failed","t":42,"p":{"pay":42},"f":[]},{"n":"Retry Liveness Verification Button Pressed","t":42,"p":{"presta":42},"f":[]},{"n":"Viewed Viewed Wallet Store","t":42,"p":{"presta":42},"f":["vv"]},{"n":"Resend Email Address Verification Button Pressed","t":41,"p":{"card":41},"f":[]},{"n":"Identity Verification Module Completed","t":41,"p":{"card":41},"f":[]},{"n":"Close Card Application Button Pressed","t":35,"p":{"card":35},"f":[]},{"n":"Incode Module Failed","t":29,"p":{"presta":29},"f":["vendor"]},{"n":"Viewed Banking Info","t":26,"p":{"pay":26},"f":[]},{"n":"Backend Vana Pay User Updated","t":26,"p":{"pay":26},"f":["backend"]},{"n":"Document Capture Failed","t":26,"p":{"presta":26},"f":[]},{"n":"Liveness Fallback Triggered","t":25,"p":{"pay":25},"f":[]},{"n":"Logout Failed","t":23,"p":{"pay":23},"f":[]},{"n":"Delivery Escalated","t":21,"p":{"undefined":21},"f":[]},{"n":"Viewed ID Verification Cooldown","t":20,"p":{"pay":20},"f":[]},{"n":"Reference Contact Removed","t":20,"p":{"card":20},"f":[]},{"n":"Payment calculator failed","t":19,"p":{"pay":19},"f":[]},{"n":"Card Application Closed","t":16,"p":{"card":16},"f":[]},{"n":"Card Application Confirmation Error","t":16,"p":{"card":16},"f":[]},{"n":"Email Update Attempt","t":15,"p":{"card":15},"f":[]},{"n":"Viewed Viewed Wallet Onborading","t":14,"p":{"presta":14},"f":["vv","typo"]},{"n":"Viewed Onboarding 2","t":14,"p":{"presta":14},"f":[]},{"n":"Identity Verification Failed","t":14,"p":{"card":14},"f":[]},{"n":"Biometric Unlock Succeeded","t":13,"p":{"presta":13},"f":[]},{"n":"Identity Verification Aborted","t":12,"p":{"card":12},"f":[]},{"n":"Edit Mode Entered","t":11,"p":{"pay":11},"f":[]},{"n":"Viewed Instant Transfer Information","t":11,"p":{"presta":11},"f":[]},{"n":"Review Edit Clicked","t":9,"p":{"pay":9},"f":[]},{"n":"Contract Signature Failed","t":9,"p":{"pay":9},"f":[]},{"n":"Viewed active","t":9,"p":{"presta":9},"f":["ruido"]},{"n":"Viewed Wallet Purchase Confirmation","t":9,"p":{"presta":9},"f":[]},{"n":"Edit Card Application Button Pressed","t":9,"p":{"card":9},"f":[]},{"n":"Password Change Completed","t":8,"p":{"pay":8},"f":[]},{"n":"Password Change Submitted","t":8,"p":{"pay":8},"f":[]},{"n":"Viewed Onboarding 3","t":7,"p":{"presta":7},"f":[]},{"n":"Change User Phone Number Button Pressed","t":7,"p":{"presta":7},"f":[]},{"n":"Send Document Failed","t":7,"p":{"presta":7},"f":[]},{"n":"Edit Saved","t":6,"p":{"pay":6},"f":[]},{"n":"Personal Income Submitted Failed","t":6,"p":{"pay":6},"f":[]},{"n":"Create Account Instead Button Pressed","t":6,"p":{"presta":6},"f":[]},{"n":"Password Change Modal Dismissed","t":5,"p":{"pay":5},"f":[]},{"n":"Viewed Onboarding 4","t":5,"p":{"presta":5},"f":[]},{"n":"Onboarding Completed","t":5,"p":{"presta":5},"f":[]},{"n":"Viewed Biometric Prompt Entry","t":5,"p":{"presta":5},"f":[]},{"n":"Customer Unsubscribed","t":5,"p":{"undefined":5},"f":[]},{"n":"First Purchase Confirmed","t":5,"p":{"undefined":5},"f":[]},{"n":"Card Activation Failed","t":5,"p":{"card":5},"f":[]},{"n":"Identity Verification Completed","t":5,"p":{"card":5},"f":[]},{"n":"Payment Method Update Failed","t":4,"p":{"pay":4},"f":[]},{"n":"Rewards Referral Expectancy","t":4,"p":{"presta":4},"f":[]},{"n":"Viewed Login Landing Telus","t":3,"p":{"pay":3},"f":[]},{"n":"Segment Upgrade Animation Displayed","t":3,"p":{"pay":3},"f":[]},{"n":"Loan Offer Rejected","t":2,"p":{"presta":2},"f":[]},{"n":"Biometric Activation Started","t":2,"p":{"presta":2},"f":[]},{"n":"Biometric Activation Completed","t":2,"p":{"presta":2},"f":[]},{"n":"Problem Reported","t":2,"p":{"undefined":2},"f":[]},{"n":"Edit Cancelled","t":1,"p":{"pay":1},"f":[]},{"n":"Rate Later Button Pressed","t":1,"p":{"presta":1},"f":[]},{"n":"Incode Module Retry","t":1,"p":{"presta":1},"f":["vendor"]}]}</script>
+<script>
+(function () {
+  var DATA = JSON.parse(document.getElementById("data").textContent);
+  var PRODS = ["presta", "pay", "card", "vana_presta", "undefined"];
+  var PLABEL = { presta: "presta", pay: "pay", card: "card", vana_presta: "vana_presta", undefined: "sin producto" };
+  var PVAR = { presta: "--p-presta", pay: "--p-pay", card: "--p-card", vana_presta: "--p-vpresta", undefined: "--p-none" };
+
+  function fmt(n) {
+    if (n >= 1e6) return (n / 1e6).toFixed(1) + " M";
+    if (n >= 1e4) return Math.round(n / 1e3) + " k";
+    return n.toLocaleString("es-GT");
+  }
+  function fmtFull(n) { return n.toLocaleString("es-GT"); }
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+  /* ---- product bars ---- */
+  function barRows(el, rows, valueFmt) {
+    var max = Math.max.apply(null, rows.map(function (r) { return r.v; }));
+    el.innerHTML = rows.map(function (r) {
+      var w = Math.max(0.4, (r.v / max) * 72);
+      return '<div class="brow">' +
+        '<div class="lbl"><span class="dot" style="background:var(' + PVAR[r.p] + ')"></span>' + PLABEL[r.p] + "</div>" +
+        '<div class="track" title="' + PLABEL[r.p] + ": " + fmtFull(r.v) + '">' +
+        '<div class="bar" style="width:' + w + "%;background:var(" + PVAR[r.p] + ')"></div>' +
+        '<span class="val" style="--w:' + w + '%">' + valueFmt(r.v) + "</span></div></div>";
+    }).join("");
+  }
+  barRows(document.getElementById("chart-vol"), DATA.products.map(function (p) { return { p: p.key, v: p.volume }; }), fmt);
+  barRows(document.getElementById("chart-cnt"), DATA.products.slice().sort(function (a, b) { return b.count - a.count; }).map(function (p) { return { p: p.key, v: p.count }; }), function (v) { return String(v); });
+
+  /* ---- clusters ---- */
+  var CHIP = { dup: ['chip-warn', '⚠ duplicado'], typo: ['chip-crit', '✕ typo'], casing: ['chip-crit', '✕ casing'], bug: ['chip-crit', '✕ bug wrapper'], vendor: ['chip-info', 'ⓘ 4 familias'] };
+  document.getElementById("clusters").innerHTML = DATA.clusters.map(function (c) {
+    var max = Math.max.apply(null, c.variants.map(function (v) { return v.v; }));
+    var chip = CHIP[c.kind];
+    return '<div class="card cluster">' +
+      '<div class="cluster-top"><h3>' + esc(c.title) + '</h3><span class="chip ' + chip[0] + '">' + chip[1] + "</span></div>" +
+      '<div>' + c.variants.map(function (v) {
+        var w = Math.max(1.5, (v.v / max) * 100);
+        var name = esc(v.n);
+        if (v.hl) name = name.replace(new RegExp(esc(v.hl)), '<span class="tag">' + esc(v.hl) + "</span>");
+        return '<div class="vrow"><div class="name">' + name + '</div>' +
+          '<div class="mini" title="' + esc(v.n) + ": " + fmtFull(v.v) + '"><div class="mtrack"><div class="mbar" style="width:' + w + '%"></div></div>' +
+          '<div class="mval">' + fmt(v.v) + "</div></div></div>";
+      }).join("") + "</div>" +
+      '<div class="fix">Canónico: <code>' + esc(c.fix) + "</code></div></div>";
+  }).join("");
+
+  /* ---- explorer table ---- */
+  var FLABEL = { vv: ["chip-crit", "doble Viewed"], typo: ["chip-crit", "typo"], casing: ["chip-crit", "casing"], es: ["chip-warn", "español"], estilo: ["chip-warn", "estilo"], backend: ["chip-info", "backend"], vendor: ["chip-info", "vendor"], ruido: ["chip-crit", "ruido"] };
+  var events = DATA.events;
+  events.forEach(function (e) { e._q = e.n.toLowerCase(); });
+
+  var state = { q: "", prods: {}, onlyFlags: false, shown: 60 };
+  var tbody = document.getElementById("tbody");
+  var rowcount = document.getElementById("rowcount");
+  var morewrap = document.getElementById("morewrap");
+  var morebtn = document.getElementById("morebtn");
+  var PAGE = 60;
+
+  function filtered() {
+    var actives = PRODS.filter(function (p) { return state.prods[p]; });
+    return events.filter(function (e) {
+      if (state.q && e._q.indexOf(state.q) === -1) return false;
+      if (state.onlyFlags && (!e.f || !e.f.length)) return false;
+      if (actives.length) {
+        var hit = actives.some(function (p) { return e.p[p]; });
+        if (!hit) return false;
+      }
+      return true;
+    });
+  }
+
+  function render() {
+    var rows = filtered();
+    var slice = rows.slice(0, state.shown);
+    tbody.innerHTML = slice.map(function (e) {
+      var prods = PRODS.filter(function (p) { return e.p[p]; }).map(function (p) {
+        return '<span class="pchip"><span class="dot" style="background:var(' + PVAR[p] + ')"></span>' + PLABEL[p] + " " + fmt(e.p[p]) + "</span>";
+      }).join("");
+      var flags = (e.f || []).map(function (f) {
+        var d = FLABEL[f];
+        return '<span class="chip ' + d[0] + '">' + d[1] + "</span>";
+      }).join("");
+      return "<tr><td class=\"ev\">" + esc(e.n) + '</td><td class="num">' + fmtFull(e.t) + "</td><td>" + prods + '</td><td><div class="flagchips">' + flags + "</div></td></tr>";
+    }).join("");
+    rowcount.textContent = rows.length === events.length ? events.length + " eventos" : rows.length + " de " + events.length + " eventos";
+    if (rows.length > state.shown) {
+      morewrap.hidden = false;
+      morebtn.textContent = "Mostrar " + Math.min(PAGE * 3, rows.length - state.shown) + " más (" + (rows.length - state.shown) + " restantes)";
+    } else {
+      morewrap.hidden = true;
+    }
+  }
+
+  document.getElementById("q").addEventListener("input", function (ev) {
+    state.q = ev.target.value.trim().toLowerCase(); state.shown = PAGE; render();
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".fbtn[data-prod]"), function (btn) {
+    btn.addEventListener("click", function () {
+      var p = btn.getAttribute("data-prod");
+      state.prods[p] = !state.prods[p];
+      btn.setAttribute("aria-pressed", String(!!state.prods[p]));
+      state.shown = PAGE; render();
+    });
+  });
+  document.getElementById("onlyflags").addEventListener("click", function () {
+    state.onlyFlags = !state.onlyFlags;
+    this.setAttribute("aria-pressed", String(state.onlyFlags));
+    state.shown = PAGE; render();
+  });
+  morebtn.addEventListener("click", function () { state.shown += PAGE * 3; render(); });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
