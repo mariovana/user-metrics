@@ -176,7 +176,7 @@ Estos son los casos donde **dos o más eventos con tráfico simultáneo** repres
 
 ## 6. Problemas sistémicos de naming
 
-1. **Doble prefijo `Viewed Viewed *` (23 eventos activos, ~700k/30d)** — bug del wrapper de tracking que concatena "Viewed" al nombre de pantalla que ya lo incluía. Ej.: `Viewed Viewed Loan Details` (70,614) convive con `Viewed Loan Details` (435,805). Hay que corregir el wrapper y migrar.
+1. **Doble prefijo `Viewed Viewed *` (23 eventos activos, ~700k/30d)** — **causa raíz confirmada** (ver [runbook](fix-viewed-viewed.md)): el mapping page/screen del destino Mixpanel (Actions) en Segment antepone `Viewed `, y la app web (`analytics.js`) le pasa nombres ya prefijados; Android (`analytics-kotlin`) los pasa limpios. Ej.: `Viewed Viewed Loan Details` (70,614, web) convive con `Viewed Loan Details` (435,805, Android). Fix: Insert Function en el destino de Segment + estandarizar los `page()` de la web.
 2. **Sufijo redundante**: `Viewed Bank Account Viewed`, `Viewed Personal Info Viewed`, `Viewed VRM Viewed`, `Viewed Review Viewed`, y un evento llamado solo `Viewed` (3,882/30d).
 3. **Tres convenciones de acción UI conviviendo**: `* Button Pressed` (37 eventos), `* Clicked` (20), `* Tapped` (1). La misma semántica, tres vocabularios — imposible hacer queries genéricas.
 4. **Mezcla de idiomas**: `Viewed Detalle de orden`, `Viewed Orden generada`, `Viewed Formulario agregar vendedor`, `Viewed Historial`, `Viewed Tu negocio`, `Venta Exitosa`, `Comunicaciones Customer IO` conviven con inglés.
