@@ -74,6 +74,34 @@ Este es el método que encuentra **todos** los eventos malformados de un golpe, 
 
 Reporte ya construido: `https://mixpanel.com/project/3370988/view/3877396/app/insights#62VPeCSj7QxB`
 
+> **La forma más rápida de aprenderlo:** abre ese reporte y desármalo. Toda la configuración está en el panel izquierdo; cambiando un solo campo (el valor del filtro) obtienes una variante nueva.
+
+### Click por click, desde cero
+
+| # | Acción | Por qué |
+|---|---|---|
+| 00 | Verifica arriba a la izquierda que el proyecto sea **Vana** y el workspace **All Project Data** | En *Vana QA* el reporte sale vacío |
+| 01 | Botón **+ New → Insights**, o la URL directa `/project/3370988/view/3877396/app/insights` | La URL es a prueba de cambios de UI |
+| 02 | En la sección de métricas (fila **A**), clic en el selector de evento → escribe **All Events** | Va `All Events` a propósito: todavía no sabemos qué eventos están mal, y eso es lo que queremos descubrir. Filtrar por propiedad sobre «todos los eventos» es el modo exploración |
+| 03 | En la misma fila, cambia la medición a **Total events** (si dice *Unique users*) | *Unique users* cuenta personas; queremos contar **ocurrencias** |
+| 04 | **+ Filter** → en el buscador escribe `event_original_name`, con guiones bajos y tal cual | Esta propiedad **no tiene display name**, aparece con su nombre técnico en *Event Properties* |
+| 05 | Cambia el operador a **contains** (entra en *equals*) → valor **Viewed** → Enter | Respeta la mayúscula inicial |
+| 06 | **+ Breakdown** → `event_original_name` | Abre una fila por cada nombre original distinto: lo que las apps están mandando |
+| 07 | **+ Breakdown** otra vez → **Mixpanel Library** (busca «lib») | Ese es `mp_lib`, y **sí tiene display name**, por eso aparece como *Mixpanel Library*. El orden importa: nombre primero, SDK después |
+| 08 | Selector de fechas arriba a la derecha → **Last 30 days** | |
+| 09 | Tipo de gráfico → **Table** | Puedes ordenar por volumen desde el encabezado y exportar a CSV |
+| 10 | Lee cada fila: *¿este nombre original ya trae «Viewed»?* Si sí, está mal — y la columna de SDK dice a qué equipo llamar | |
+| 11 | **Save** → nómbralo y mándalo a un board | Para revisarlo cada sprint y ver si el volumen sube o baja |
+
+### Si algo no sale
+
+| Síntoma | Causa |
+|---|---|
+| Cero filas | El operador quedó en *equals*; debe ser *contains* |
+| `event_original_name` no aparece en el buscador | Solo existe en eventos que pasan por Segment. Confirma proyecto **Vana** (3370988) y que el rango de fechas cubra días con tráfico |
+| Los números salen muy bajos | La medición quedó en *Unique users*; cámbiala a *Total events* |
+| Demasiadas filas | Ordena por volumen, o agrega un filtro por `product_context` para ver un producto a la vez |
+
 **Repetir el mismo query cambiando el filtro a `Displayed`** para atrapar `Orders In Progress Displayed` y `Primary Offer Displayed`. Igual con `Shown`, `Screen`, `Page` si sospechas de otras convenciones.
 
 ### Variante: contar el daño de un patrón conocido

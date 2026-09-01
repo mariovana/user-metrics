@@ -151,6 +151,28 @@
     .step { padding-left: 46px; }
   }
 
+  /* ── click-by-click ── */
+  .clicks { margin-top: 20px; }
+  .click { display: grid; grid-template-columns: 26px 1fr; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--grid); align-items: baseline; }
+  .click:last-child { border-bottom: none; }
+  .click .cn { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 600; color: var(--muted); padding-top: 2px; }
+  .click .ct { font-size: 14.5px; color: var(--ink-2); }
+  .click .ct b { color: var(--ink); }
+  .click .tip { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); }
+  .click .tip b { color: var(--ink-2); }
+  .uipath {
+    font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink);
+    background: var(--sunken); border: 1px solid var(--ring); border-radius: 5px;
+    padding: 1.5px 7px; white-space: nowrap;
+  }
+  .trouble { margin-top: 22px; }
+  .trouble h4 { margin-bottom: 10px; }
+  .trouble .t-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--grid); font-size: 14px; }
+  .trouble .t-row:last-child { border-bottom: none; }
+  .trouble .t-sym { color: var(--ink); }
+  .trouble .t-fix { color: var(--ink-2); }
+  @media (max-width: 560px) { .trouble .t-row { grid-template-columns: 1fr; gap: 3px; } }
+
   /* ── callouts ── */
   .note { margin-top: 18px; padding: 14px 16px; border-radius: 9px; font-size: 14px; border: 1px solid var(--ring); }
   .note p { max-width: none; color: var(--ink-2); }
@@ -280,7 +302,7 @@
       <div class="kicker">Insights</div>
       <h2>El detector definitivo</h2>
       <p>Este método encuentra <strong>todos</strong> los eventos malformados de un golpe — prefijos, sufijos, y los que aparezcan en el futuro. La lógica: <em>si el nombre que la app envió ya contiene «Viewed», y ese evento pasa por el mapping que antepone «Viewed », el resultado está duplicado.</em></p>
-      <p style="margin-top:12px">En <strong>Insights → New report</strong>, configura:</p>
+      <p style="margin-top:12px">La forma más rápida de aprenderlo es <strong>abrir el reporte ya construido y desarmarlo</strong>: verás toda la configuración en el panel izquierdo, y cambiando un solo campo (el valor del filtro) obtienes una variante nueva. Abajo está la configuración completa y, después, el click por click desde cero.</p>
       <div class="cfg">
         <div class="cfg-head"><span class="beacon"></span>Insights · nuevo reporte</div>
         <div class="row"><div class="k">Metric</div><div class="v"><code>All Events</code> <em>— measurement: Total events</em></div></div>
@@ -290,6 +312,61 @@
         <div class="row"><div class="k">Date range</div><div class="v">Last 30 days</div></div>
         <div class="row"><div class="k">Chart</div><div class="v">Table o Bar</div></div>
       </div>
+      <h4 style="margin-top:26px">Click por click, desde cero</h4>
+      <div class="clicks">
+        <div class="click"><div class="cn">00</div><div class="ct">
+          <b>Verifica el proyecto.</b> Arriba a la izquierda debe decir <b>Vana</b> y el workspace <b>All Project Data</b>. Si estás en <em>Vana QA</em> el reporte saldrá vacío.
+        </div></div>
+        <div class="click"><div class="cn">01</div><div class="ct">
+          <b>Abre un Insights nuevo.</b> Botón <span class="uipath">+ New</span> → <span class="uipath">Insights</span>. La ruta directa y a prueba de cambios de UI es la URL: <span class="uipath">/project/3370988/view/3877396/app/insights</span>
+        </div></div>
+        <div class="click"><div class="cn">02</div><div class="ct">
+          <b>Elige la métrica.</b> En el panel izquierdo, en la sección de métricas (la fila marcada <span class="uipath">A</span>), haz clic en el selector de evento y escribe <b>All Events</b>.
+          <span class="tip">Va <b>All Events</b> y no un evento específico a propósito: todavía no sabemos cuáles están mal — eso es justo lo que queremos descubrir. Filtrar por propiedad sobre «todos los eventos» es el modo exploración.</span>
+        </div></div>
+        <div class="click"><div class="cn">03</div><div class="ct">
+          <b>Cambia la medición a <span class="uipath">Total events</span>.</b> En la misma fila del evento hay un segundo selector. Si dice <em>Unique users</em>, cámbialo.
+          <span class="tip"><b>Unique users</b> cuenta personas; nosotros queremos contar <b>ocurrencias</b> del evento. Con «unique» los números salen mucho más bajos y no reflejan el volumen de basura.</span>
+        </div></div>
+        <div class="click"><div class="cn">04</div><div class="ct">
+          <b>Agrega el filtro.</b> Clic en <span class="uipath">+ Filter</span> y en el buscador de propiedades escribe <b>event_original_name</b>, con guiones bajos y tal cual.
+          <span class="tip">Esta propiedad <b>no tiene display name</b> en Lexicon, así que aparece con su nombre técnico, en la sección <em>Event Properties</em>. (Contraste: <code>mp_lib</code> sí lo tiene.)</span>
+        </div></div>
+        <div class="click"><div class="cn">05</div><div class="ct">
+          <b>Cambia el operador a <span class="uipath">contains</span></b> — normalmente entra en <em>equals</em>. Luego escribe <b>Viewed</b> en el campo de valor y confirma con Enter.
+          <span class="tip">Respeta la mayúscula inicial. Si te devuelve cero filas, lo primero a revisar es que el operador quedó en <em>contains</em> y no en <em>equals</em>.</span>
+        </div></div>
+        <div class="click"><div class="cn">06</div><div class="ct">
+          <b>Primer breakdown.</b> Clic en <span class="uipath">+ Breakdown</span> → escribe <b>event_original_name</b> → selecciónalo.
+          <span class="tip">Esto abre una fila por cada nombre original distinto: es la lista de lo que las apps están mandando.</span>
+        </div></div>
+        <div class="click"><div class="cn">07</div><div class="ct">
+          <b>Segundo breakdown.</b> Clic otra vez en <span class="uipath">+ Breakdown</span> → escribe <b>Mixpanel Library</b> (o simplemente «lib»).
+          <span class="tip">Ese es <code>mp_lib</code>: en la interfaz aparece con su display name <b>Mixpanel Library</b>, no con el nombre técnico. El orden importa — primero el nombre, luego el SDK — para que la tabla se lea «qué mandó → quién lo mandó».</span>
+        </div></div>
+        <div class="click"><div class="cn">08</div><div class="ct">
+          <b>Rango de fechas.</b> Selector arriba a la derecha → <span class="uipath">Last 30 days</span>.
+        </div></div>
+        <div class="click"><div class="cn">09</div><div class="ct">
+          <b>Tipo de gráfico: <span class="uipath">Table</span>.</b> Los íconos están sobre el área del gráfico.
+          <span class="tip">Tabla y no barras, porque puedes ordenar por volumen haciendo clic en el encabezado de la columna y bajar el resultado a CSV.</span>
+        </div></div>
+        <div class="click"><div class="cn">10</div><div class="ct">
+          <b>Lee el resultado.</b> Cada fila es un nombre original con su SDK y su volumen. La única pregunta que te haces: <em>¿este nombre original ya trae la palabra «Viewed»?</em> Si sí, está mal — y la columna de SDK te dice a qué equipo llamar.
+        </div></div>
+        <div class="click"><div class="cn">11</div><div class="ct">
+          <b>Guárdalo.</b> <span class="uipath">Save</span> arriba a la derecha, nómbralo y mándalo a un board. Así lo revisas cada sprint y ves si el volumen sube o baja.
+        </div></div>
+      </div>
+
+      <div class="trouble">
+        <h4>Si algo no sale</h4>
+        <div class="t-row"><div class="t-sym">Cero filas en el resultado</div><div class="t-fix">El operador quedó en <em>equals</em>. Debe ser <em>contains</em>.</div></div>
+        <div class="t-row"><div class="t-sym"><code>event_original_name</code> no aparece en el buscador</div><div class="t-fix">Solo existe en eventos que pasan por Segment. Confirma que estás en el proyecto <b>Vana</b> (3370988) y que el rango de fechas cubre días con tráfico.</div></div>
+        <div class="t-row"><div class="t-sym">Los números salen muy bajos</div><div class="t-fix">La medición quedó en <em>Unique users</em>. Cámbiala a <em>Total events</em>.</div></div>
+        <div class="t-row"><div class="t-sym">Demasiadas filas para leer</div><div class="t-fix">Ordena por volumen y quédate con las de arriba, o agrega un filtro por <code>product_context</code> para ver un producto a la vez.</div></div>
+      </div>
+
       <p style="margin-top:16px"><strong>Repite el query cambiando el filtro a <code>Displayed</code></strong> para atrapar <code>Orders In Progress Displayed</code> y <code>Primary Offer Displayed</code>. Igual con <code>Shown</code>, <code>Screen</code> o <code>Page</code> si sospechas de otras convenciones.</p>
       <h4 style="margin-top:24px">Variante: medir el daño de un patrón que ya conoces</h4>
       <div class="cfg">
