@@ -12,6 +12,9 @@ Tener un mapeo general de **todos** los eventos que existen en vana y sus produc
 |---|---|
 | [`docs/event-mapping.md`](docs/event-mapping.md) | Análisis completo: inventario, clusters de duplicados, problemas de naming y taxonomía canónica propuesta |
 | [`docs/dashboard/index.html`](docs/dashboard/index.html) | **Dashboard visual** (autocontenido, listo para GitHub Pages): KPIs, desglose por producto, clusters de duplicados y explorador de los 534 eventos |
+| [`docs/como-auditar-eventos-mixpanel.md`](docs/como-auditar-eventos-mixpanel.md) · [versión visual](docs/guia/index.html) | **Guía práctica**: cómo encontrar por tu cuenta eventos duplicados y malformados en Mixpanel, y qué SDK los envía |
+| [`docs/fix-viewed-viewed.md`](docs/fix-viewed-viewed.md) | Runbook del bug `Viewed Viewed`: causa raíz, Insert Function propuesta y fix en la app web |
+| [`data/malformed_screen_events.csv`](data/malformed_screen_events.csv) | Los 31 eventos de pantalla malformados con su SDK de origen y el nombre correcto esperado |
 | [`data/mixpanel_event_inventory.csv`](data/mixpanel_event_inventory.csv) | Inventario crudo: 551 eventos con volumen de 30 días, metadata de Lexicon (verified/hidden/dropped, tags, descripción) |
 | [`data/mixpanel_event_by_product.csv`](data/mixpanel_event_by_product.csv) | Matriz evento × producto (`product_context`): 640 filas con volumen de 30 días |
 

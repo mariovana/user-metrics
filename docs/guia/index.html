@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Guía práctica para auditar nombres de eventos en Mixpanel: encontrar duplicados, sufijos redundantes y saber qué SDK los manda">
+<title>Auditar Eventos en Mixpanel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --sunken: #f2f1ec;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --ring: rgba(11,11,11,0.10);
+    --accent: #256abf;
+    --accent-ink: #1c5cab;
+    --wash: rgba(42,120,214,0.07);
+    --critical: #d03b3b;
+    --crit-wash: rgba(208,59,59,0.09);
+    --good: #006300;
+    --good-wash: rgba(12,163,12,0.10);
+    --warn-wash: rgba(250,178,25,0.16);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --sunken: #131312;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --ring: rgba(255,255,255,0.10);
+      --accent: #3987e5;
+      --accent-ink: #86b6ef;
+      --wash: rgba(57,135,229,0.12);
+      --critical: #e66767;
+      --crit-wash: rgba(208,59,59,0.18);
+      --good: #0ca30c;
+      --good-wash: rgba(12,163,12,0.16);
+      --warn-wash: rgba(250,178,25,0.14);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --sunken: #131312;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --baseline: #383835;
+    --ring: rgba(255,255,255,0.10);
+    --accent: #3987e5;
+    --accent-ink: #86b6ef;
+    --wash: rgba(57,135,229,0.12);
+    --critical: #e66767;
+    --crit-wash: rgba(208,59,59,0.18);
+    --good: #0ca30c;
+    --good-wash: rgba(12,163,12,0.16);
+    --warn-wash: rgba(250,178,25,0.14);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15.5px;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 812px; margin: 0 auto; padding: 44px 24px 80px; }
+
+  h1, h2, h3, h4 { font-family: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif; text-wrap: balance; }
+  h1 { font-size: clamp(29px, 4.6vw, 42px); font-weight: 800; line-height: 1.06; letter-spacing: -0.015em; }
+  h2 { font-size: 19px; font-weight: 700; letter-spacing: -0.005em; }
+  h3 { font-size: 16px; font-weight: 700; }
+  h4 { font-size: 13.5px; font-weight: 700; }
+  p { max-width: 66ch; }
+  .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 11px; }
+  .lede { color: var(--ink-2); font-size: 16.5px; margin-top: 14px; max-width: 62ch; }
+
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  p code, li code, td code, .cfg code {
+    font-size: 0.855em; background: var(--wash); color: var(--ink);
+    padding: 1.5px 5px; border-radius: 4px; overflow-wrap: break-word;
+  }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+  /* ── intro key-properties table ── */
+  .keyprops { margin-top: 34px; }
+  .scroller { overflow-x: auto; border: 1px solid var(--ring); border-radius: 10px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; }
+  .scroller table { min-width: 540px; }
+  th {
+    text-align: left; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); padding: 11px 14px;
+    border-bottom: 1px solid var(--baseline); white-space: nowrap;
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--grid); font-size: 14px; color: var(--ink-2); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  td strong { color: var(--ink); }
+
+  /* ── steps ── */
+  .steps { margin-top: 8px; }
+  .step { position: relative; padding: 34px 0 34px 58px; }
+  .step::before {
+    content: ""; position: absolute; left: 17px; top: 0; bottom: 0; width: 1px; background: var(--grid);
+  }
+  .step:last-child::before { bottom: auto; height: 40px; }
+  .step .num {
+    position: absolute; left: 0; top: 32px; width: 35px; height: 35px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--baseline); color: var(--accent-ink);
+    display: grid; place-items: center;
+    font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; font-size: 14px;
+  }
+  .step > h2 { margin-bottom: 6px; }
+  .step .kicker { font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+  .step > p { margin-top: 10px; }
+  .step > ol, .step > ul { margin: 12px 0 0 20px; display: flex; flex-direction: column; gap: 8px; }
+  .step li { color: var(--ink-2); font-size: 14.5px; }
+  .step li > strong { color: var(--ink); }
+  .step li ul { margin: 8px 0 0 18px; display: flex; flex-direction: column; gap: 6px; }
+
+  /* ── report-builder replica ── */
+  .cfg { margin-top: 18px; border: 1px solid var(--ring); border-radius: 10px; overflow: hidden; background: var(--surface); }
+  .cfg .cfg-head {
+    display: flex; align-items: center; gap: 9px; padding: 10px 14px;
+    background: var(--sunken); border-bottom: 1px solid var(--ring);
+    font-size: 12px; font-weight: 600; color: var(--ink-2); letter-spacing: 0.02em;
+  }
+  .cfg .cfg-head .beacon { width: 7px; height: 7px; border-radius: 999px; background: var(--accent); flex: none; }
+  .cfg .row { display: grid; grid-template-columns: 132px 1fr; gap: 14px; padding: 10px 14px; border-bottom: 1px solid var(--grid); align-items: baseline; }
+  .cfg .row:last-child { border-bottom: none; }
+  .cfg .k { font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .cfg .v { font-size: 14px; color: var(--ink); }
+  .cfg .v em { color: var(--ink-2); font-style: normal; font-size: 13px; }
+  @media (max-width: 560px) {
+    .cfg .row { grid-template-columns: 1fr; gap: 3px; }
+    .step { padding-left: 46px; }
+  }
+
+  /* ── callouts ── */
+  .note { margin-top: 18px; padding: 14px 16px; border-radius: 9px; font-size: 14px; border: 1px solid var(--ring); }
+  .note p { max-width: none; color: var(--ink-2); }
+  .note p + p { margin-top: 8px; }
+  .note .tag { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .note.why { background: var(--wash); border-color: transparent; }
+  .note.why .tag { color: var(--accent-ink); }
+  .note.find { background: var(--crit-wash); border-color: transparent; }
+  .note.find .tag { color: var(--critical); }
+
+  pre {
+    margin-top: 14px; background: var(--sunken); border: 1px solid var(--ring); border-radius: 9px;
+    padding: 14px 16px; overflow-x: auto;
+  }
+  pre code {
+    font-family: "IBM Plex Mono", monospace; font-size: 12.5px; line-height: 1.75;
+    background: none; padding: 0; color: var(--ink); white-space: pre;
+  }
+  pre .c { color: var(--muted); }
+
+  .verdict td:first-child, .verdict td:nth-child(2) { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink); }
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+  .pill.bad { background: var(--crit-wash); color: var(--critical); }
+  .pill.ok { background: var(--good-wash); color: var(--good); }
+  .pill.dup { background: var(--warn-wash); color: var(--ink); }
+
+  /* ── closing recipe ── */
+  .recipe { margin-top: 56px; padding-top: 34px; border-top: 1px solid var(--baseline); }
+  .rsteps { margin-top: 20px; display: flex; flex-direction: column; gap: 2px; counter-reset: r; }
+  .rstep { display: grid; grid-template-columns: 26px 1fr; gap: 13px; padding: 11px 0; border-bottom: 1px solid var(--grid); align-items: baseline; }
+  .rstep:last-child { border-bottom: none; }
+  .rstep .rn {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 600;
+    color: var(--accent-ink); padding-top: 1px;
+  }
+  .rstep .rt { font-size: 14.5px; color: var(--ink-2); }
+  .rstep .rt b { color: var(--ink); }
+
+  .rule {
+    margin-top: 40px; padding: 24px 26px; border-radius: 11px;
+    background: var(--surface); border: 1px solid var(--ring);
+  }
+  .rule h3 { margin-bottom: 14px; }
+  .rule dl { display: flex; flex-direction: column; gap: 11px; }
+  .rule .r { display: grid; grid-template-columns: 190px 1fr; gap: 14px; align-items: baseline; }
+  .rule dt { font-family: "IBM Plex Mono", monospace; font-size: 13px; font-weight: 600; color: var(--accent-ink); }
+  .rule dd { font-size: 14.5px; color: var(--ink-2); }
+  .rule dd b { color: var(--ink); }
+  @media (max-width: 560px) { .rule .r { grid-template-columns: 1fr; gap: 2px; } }
+
+  footer { margin-top: 52px; padding-top: 18px; border-top: 1px solid var(--grid); font-size: 12.5px; color: var(--muted); }
+  footer p { max-width: none; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Tribu User &amp; Growth · Guía práctica</div>
+    <h1>Auditar Eventos en Mixpanel</h1>
+    <p class="lede">Cómo encontrar por tu cuenta eventos duplicados, con nombres malformados o instrumentados dos veces — y cómo saber qué SDK los está mandando.</p>
+  </header>
+
+  <section class="keyprops">
+    <h2>Las tres propiedades que lo revelan todo</h2>
+    <p style="margin-top:10px;color:var(--ink-2);font-size:14.5px">Segment adjunta metadata técnica a cada evento que llega a Mixpanel. Casi cualquier investigación se resuelve con estas tres:</p>
+    <div class="scroller" style="margin-top:16px">
+      <table>
+        <thead><tr><th>Propiedad</th><th>Qué te dice</th><th>Valores reales en vana</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong><span class="mono">mp_lib</span></strong></td>
+            <td>Qué SDK envió el evento</td>
+            <td><code>Segment Actions: analytics.js</code> = <strong>web</strong><br><code>Segment Actions: analytics-kotlin</code> = <strong>Android</strong></td>
+          </tr>
+          <tr>
+            <td><strong><span class="mono">event_original_name</span></strong></td>
+            <td>El nombre que la app envió <strong>antes</strong> de que Segment lo transformara</td>
+            <td><em>la clave de todo</em></td>
+          </tr>
+          <tr>
+            <td><strong><span class="mono">path</span> / <span class="mono">url</span></strong></td>
+            <td>Qué pantalla de la web lo emitió</td>
+            <td><code>/nps</code>, <code>/pay/nps</code>…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note why">
+      <span class="tag">Por qué importa event_original_name</span>
+      <p>El destino <strong>Mixpanel (Actions)</strong> en Segment construye el nombre de los eventos de pantalla como <code>Viewed {{ name }}</code>. Comparar el nombre final contra el original te dice <strong>exactamente en qué punto del pipeline se ensució el nombre</strong> — y por lo tanto dónde se arregla.</p>
+      <p>Para ver qué propiedades trae un evento: <strong>Lexicon → Events → clic en el evento → lista de propiedades</strong>. O en Insights, al agregar un breakdown, escribe «original» o «lib» en el buscador de propiedades.</p>
+    </div>
+  </section>
+
+  <div class="steps">
+    <section class="step">
+      <div class="num">1</div>
+      <div class="kicker">Lexicon</div>
+      <h2>Ver qué nombres existen</h2>
+      <p>Lexicon es el catálogo de eventos. Sirve para <em>reconocer</em> el problema, no para medirlo. Entra a <strong>Data Management → Lexicon → pestaña Events</strong>.</p>
+      <ol>
+        <li>Busca <code>Viewed Viewed</code> → aparecen los 23 eventos de doble prefijo de inmediato.</li>
+        <li><strong>Para sufijos redundantes el buscador no alcanza</strong>, porque busca «contiene», no «termina en». Hay dos salidas:
+          <ul>
+            <li><strong>Ordenar por nombre (A–Z)</strong> y escanear: los duplicados quedan pegados porque comparten prefijo — <code>Viewed Bank Account Details</code>, <code>Viewed Bank Account Info</code>, <code>Viewed Bank Account Information</code>, <code>Viewed Bank Account Viewed</code>. Con 177 eventos <code>Viewed *</code> es tedioso, pero funciona.</li>
+            <li><strong>Exportar Lexicon a CSV</strong> y filtrar en Google Sheets con regex — más rápido y repetible.</li>
+          </ul>
+        </li>
+      </ol>
+      <h4 style="margin-top:22px">Fórmulas de Sheets, con la columna A = nombre del evento</h4>
+      <pre><code><span class="c"># cualquier palabra repetida (atrapa "Viewed Viewed", "Wallet … Wallet")</span>
+=REGEXMATCH(A2, "\b(\w+)\b.*\b\1\b")
+
+<span class="c"># termina en verbo de visualización → sufijo redundante</span>
+=REGEXMATCH(A2, "(Viewed|Displayed|Shown)$")
+
+<span class="c"># espacios dobles (atrapa "Viewed Bank Ticket  Details", 359 k/mes)</span>
+=REGEXMATCH(A2, "  ")
+
+<span class="c"># mismo nombre con distinto casing → duplicado invisible</span>
+=COUNTIF(ARRAYFORMULA(LOWER($A$2:$A$600)), LOWER(A2)) &gt; 1</code></pre>
+    </section>
+
+    <section class="step">
+      <div class="num">2</div>
+      <div class="kicker">Insights</div>
+      <h2>El detector definitivo</h2>
+      <p>Este método encuentra <strong>todos</strong> los eventos malformados de un golpe — prefijos, sufijos, y los que aparezcan en el futuro. La lógica: <em>si el nombre que la app envió ya contiene «Viewed», y ese evento pasa por el mapping que antepone «Viewed », el resultado está duplicado.</em></p>
+      <p style="margin-top:12px">En <strong>Insights → New report</strong>, configura:</p>
+      <div class="cfg">
+        <div class="cfg-head"><span class="beacon"></span>Insights · nuevo reporte</div>
+        <div class="row"><div class="k">Metric</div><div class="v"><code>All Events</code> <em>— measurement: Total events</em></div></div>
+        <div class="row"><div class="k">Filter</div><div class="v"><code>event_original_name</code> <em>contains</em> <code>Viewed</code></div></div>
+        <div class="row"><div class="k">Breakdown 1</div><div class="v"><code>event_original_name</code></div></div>
+        <div class="row"><div class="k">Breakdown 2</div><div class="v"><code>mp_lib</code> <em>— aparece como «Mixpanel Library»</em></div></div>
+        <div class="row"><div class="k">Date range</div><div class="v">Last 30 days</div></div>
+        <div class="row"><div class="k">Chart</div><div class="v">Table o Bar</div></div>
+      </div>
+      <p style="margin-top:16px"><strong>Repite el query cambiando el filtro a <code>Displayed</code></strong> para atrapar <code>Orders In Progress Displayed</code> y <code>Primary Offer Displayed</code>. Igual con <code>Shown</code>, <code>Screen</code> o <code>Page</code> si sospechas de otras convenciones.</p>
+      <h4 style="margin-top:24px">Variante: medir el daño de un patrón que ya conoces</h4>
+      <div class="cfg">
+        <div class="cfg-head"><span class="beacon"></span>Insights · contar un patrón conocido</div>
+        <div class="row"><div class="k">Filter</div><div class="v"><code>Event Name</code> <em>contains</em> <code>Viewed Viewed</code></div></div>
+        <div class="row"><div class="k">Breakdown</div><div class="v"><code>Event Name</code> + <code>mp_lib</code></div></div>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="num">3</div>
+      <div class="kicker">Interpretar</div>
+      <h2>¿Bug de pipeline o problema de convención?</h2>
+      <p>Este es el paso que la mayoría se salta, y es el que decide <strong>quién tiene que arreglarlo</strong>. Compara el nombre final contra <code>event_original_name</code>:</p>
+      <div class="scroller" style="margin-top:16px">
+        <table>
+          <thead><tr><th>Si…</th><th>Significa</th><th>Dónde se arregla</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="mono" style="color:var(--ink)">final = "Viewed " + original</span></td>
+              <td>pasó por <code>page()</code> / <code>screen()</code> y el mapping le puso el prefijo</td>
+              <td><strong>Segment</strong> (Insert Function) + la app que manda el nombre pre-formateado</td>
+            </tr>
+            <tr>
+              <td><span class="mono" style="color:var(--ink)">final = original exacto</span></td>
+              <td>fue un <code>track()</code>; Segment no lo tocó</td>
+              <td><strong>el código de la app</strong> — es convención de naming</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4 style="margin-top:26px">Los dos casos, lado a lado, con datos reales</h4>
+      <div class="scroller" style="margin-top:14px">
+        <table class="verdict">
+          <thead><tr><th>event_original_name</th><th>Evento final</th><th>SDK</th><th>Veredicto</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>VRM Viewed</td>
+              <td>Viewed VRM Viewed</td>
+              <td>web</td>
+              <td><span class="pill bad">bug de pipeline</span></td>
+            </tr>
+            <tr>
+              <td>Notification Inbox</td>
+              <td>Viewed Notification Inbox</td>
+              <td>Android + web</td>
+              <td><span class="pill ok">correcto</span></td>
+            </tr>
+            <tr>
+              <td>Notification Inbox Viewed</td>
+              <td>Notification Inbox Viewed</td>
+              <td>web</td>
+              <td><span class="pill dup">doble instrumentación</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note find">
+        <span class="tag">Hallazgo nuevo que salió con este método</span>
+        <p>La pantalla del <strong>inbox de notificaciones está instrumentada dos veces desde la web</strong>, con dos nombres distintos:</p>
+        <p><code>analytics.page("Notification Inbox")</code> → <code>Viewed Notification Inbox</code> — 90,625 web + 617,809 Android<br>
+        <code>analytics.track("Notification Inbox Viewed")</code> → <code>Notification Inbox Viewed</code> — 775,022, <strong>solo web</strong></p>
+        <p>Son ~1.48 M eventos/mes para una sola vista de pantalla, contados dos veces con nombres distintos. Android solo emite el correcto. <strong>Acción:</strong> la web elimina el <code>track()</code> redundante y se queda con <code>page()</code>.</p>
+      </div>
+    </section>
+
+    <section class="step">
+      <div class="num">4</div>
+      <div class="kicker">Events · stream crudo</div>
+      <h2>Localizar la línea de código</h2>
+      <p>Para cerrar la investigación y darle al equipo de desarrollo la ubicación exacta:</p>
+      <ol>
+        <li>Abre el explorador de <strong>Events</strong> (el stream de eventos crudos en el nav lateral).</li>
+        <li>Filtra por el nombre del evento sospechoso.</li>
+        <li>Abre una ocurrencia individual y revisa sus propiedades.</li>
+        <li>Las propiedades <code>path</code> y <code>url</code> te dicen la ruta exacta de la web que lo emitió — <strong>eso</strong> es lo que le pasas al equipo web.</li>
+      </ol>
+      <p style="margin-top:14px">Ejemplo: el evento huérfano <code>Viewed</code> (3,995/mes) trae <code>path</code> = <code>/nps</code> y <code>/pay/nps</code> → son esas dos páginas las que llaman <code>analytics.page()</code> sin nombre.</p>
+    </section>
+  </div>
+
+  <section class="recipe">
+    <h2>La receta, para cualquier duplicado</h2>
+    <p style="margin-top:10px;color:var(--ink-2);font-size:14.5px">Este flujo no es solo para <code>Viewed</code>: sirve para casing, typos, espacios dobles y cualquier familia de eventos sospechosa.</p>
+    <div class="rsteps">
+      <div class="rstep"><div class="rn">01</div><div class="rt"><b>Sospecha</b> — detecta el patrón en Lexicon: buscar, ordenar A–Z, o exportar a Sheets con regex.</div></div>
+      <div class="rstep"><div class="rn">02</div><div class="rt"><b>Mide</b> — Insights con filtro <code>contains</code> sobre <code>Event Name</code>, breakdown por <code>Event Name</code>.</div></div>
+      <div class="rstep"><div class="rn">03</div><div class="rt"><b>Atribuye</b> — agrega breakdown por <code>mp_lib</code> (qué SDK) y <code>source_app</code> / <code>product_context</code> (qué app y producto).</div></div>
+      <div class="rstep"><div class="rn">04</div><div class="rt"><b>Diagnostica</b> — agrega breakdown por <code>event_original_name</code> y compáralo con el nombre final: ahí se ve si el problema es del pipeline de Segment o del código de la app.</div></div>
+      <div class="rstep"><div class="rn">05</div><div class="rt"><b>Localiza</b> — explorador de Events → propiedades <code>path</code> / <code>url</code> del evento crudo.</div></div>
+      <div class="rstep"><div class="rn">06</div><div class="rt"><b>Documenta</b> — nombre canónico, dónde se arregla, y cómo verificar que el volumen del evento malo cae a cero.</div></div>
+    </div>
+
+    <div class="rule">
+      <h3>La regla mental para no perderse</h3>
+      <dl>
+        <div class="r"><dt>mp_lib</dt><dd>responde <b>quién lo mandó</b></dd></div>
+        <div class="r"><dt>event_original_name</dt><dd>responde <b>qué mandó</b></dd></div>
+        <div class="r"><dt>la diferencia</dt><dd>entre ese nombre y el final responde <b>quién lo ensució</b></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <footer>
+    <p>Proyecto Mixpanel <span class="mono">Vana</span> (3370988), workspace <em>All Project Data</em> (3877396). Volúmenes: últimos 30 días al 2026-09-01. Versión en markdown y datos crudos en el repo <span class="mono">mariovana/user-metrics</span> → <span class="mono">docs/como-auditar-eventos-mixpanel.md</span>.</p>
+  </footer>
+</div>
+
+</body>
+</html>

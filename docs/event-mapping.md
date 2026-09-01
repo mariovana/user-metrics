@@ -166,8 +166,17 @@ Estos son los casos donde **dos o más eventos con tráfico simultáneo** repres
 | `Checkout Completed` | 0 (proyecto legado) | |
 | **Canónico propuesto** | | `Checkout Started`, `Checkout Completed`, `Checkout Failed` + prop `source` |
 
-### 5.10 Otros duplicados menores
-- `Notification Inbox Viewed` (698k) vs `Viewed Notification Inbox` (718k) — **ambos activos, orden de palabras invertido**.
+### 5.10 Inbox de notificaciones — doble instrumentación confirmada
+La misma pantalla se instrumenta **dos veces desde la app web**, con dos nombres distintos (confirmado vía `event_original_name` + `mp_lib`):
+
+| Llamada | Evento resultante | Vol 30d | SDK |
+|---|---|---|---|
+| `analytics.page("Notification Inbox")` | `Viewed Notification Inbox` | 617,809 + 90,625 | Android + web |
+| `analytics.track("Notification Inbox Viewed")` | `Notification Inbox Viewed` | 775,022 | **solo web** |
+
+~1.48 M eventos/mes para una sola vista de pantalla, contados dos veces. Android solo emite el correcto. **Acción:** la web elimina el `track()` redundante y se queda con `page()`. A diferencia del bug `Viewed Viewed`, este no es un problema del pipeline de Segment — se arregla en el código de la web.
+
+### 5.11 Otros duplicados menores
 - `Loan 1 Application Approved/Rejected/Fulfilled/Released` vs `Loan Application Approved/...` — el número de préstamo va en el nombre en lugar de una propiedad `loan_sequence`.
 - `Viewed Onboarding` (1.1M) vs `Viewed Onboarding 1/2/3/4` (374/14/7/5) — el paso va en el nombre; usar prop `step`.
 - `Viewed Personal Information 1/2/3` y `Viewed Work Information 1/2/3` — ídem (y sus variantes `Viewed Viewed *`).
